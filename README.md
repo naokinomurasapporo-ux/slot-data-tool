@@ -102,35 +102,58 @@ python scripts/save_session.py
 
 ## 毎日の使い方（データ更新）
 
-毎日以下の 2 コマンドを実行するだけです。
-
-### Step 1: データ取得 + 高設定判定
+### ワンコマンドで完結する方法（推奨）
 
 ```bash
+bash scripts/update_and_publish.sh
+```
+
+このコマンド1つで以下をすべて自動で行います。
+
+| ステップ | 内容 |
+|---|---|
+| Step 1 | 全店舗のデータ取得 + 高設定判定 |
+| Step 2 | 30日横持ちデータ生成・Web用JSON更新 |
+| Step 3 | `docs/data/` を git add → commit → push |
+
+数分後に GitHub Pages が最新データに更新されます。
+
+#### オプション
+
+```bash
+# データ取得・生成だけ行い、git push はしない（確認したいとき）
+bash scripts/update_and_publish.sh --no-push
+
+# 取得・生成をスキップして git push だけ行う（手動で修正した後など）
+bash scripts/update_and_publish.sh --push-only
+```
+
+---
+
+### 手動で1ステップずつ実行したい場合
+
+```bash
+# Step 1: データ取得 + 高設定判定
 python scripts/run_all_stores_pipeline.py
-```
 
-- `config/stores.json` の `enabled: true` な店舗を順番に処理
-- 結果は `data/processed/YYYYMMDD_店舗名_judged.json` に保存
-
-### Step 2: 30日横持ちデータ生成 + Web用データ更新
-
-```bash
+# Step 2: 30日横持ちデータ生成・Web用JSON更新
 python scripts/build_30day_store_json.py
-```
 
-- `data/processed/` の蓄積データから過去30日分を集計
-- `docs/data/` に Web 画面用の JSON を出力（GitHub Pages で使用）
-
-### Step 3: GitHub に push（Web 画面を更新）
-
-```bash
+# Step 3: GitHub に push
 git add docs/data/
 git commit -m "データ更新 $(date +%Y%m%d)"
 git push
 ```
 
-数分後に GitHub Pages の URL が最新データに更新されます。
+---
+
+### セッションが切れた場合
+
+```bash
+python scripts/save_session.py
+```
+
+ブラウザが開くのでサイトセブンにログインし、ターミナルに戻って Enter を押してください。
 
 ---
 
@@ -187,6 +210,7 @@ python -m http.server 8080
 
 | スクリプト | 用途 |
 |---|---|
+| `scripts/update_and_publish.sh` | **毎日の更新を1コマンドで実行（推奨）** |
 | `scripts/save_session.py` | 初回ログイン → セッション保存 |
 | `scripts/run_all_stores_pipeline.py` | 全店舗のデータ取得・判定・保存 |
 | `scripts/run_one_store_pipeline.py` | 1店舗だけ処理（テスト用） |
