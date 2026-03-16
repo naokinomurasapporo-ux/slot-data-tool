@@ -249,6 +249,76 @@ python scripts/toggle_stores.py --off 1 2
 
 ---
 
+## 毎日23:30に自動実行する（Mac launchd）
+
+Mac の「スケジュール機能（launchd）」を使って、毎日23:30に自動でデータ取得・公開を行えます。
+一度登録すれば、以後は Mac が起きている限り自動で動き続けます。
+
+### 登録手順（初回のみ）
+
+```bash
+cd ~/slot-data-tool
+
+# 1. plist ファイルを launchd の所定フォルダにコピー
+cp launchd/com.naoki.slotdatatool.plist ~/Library/LaunchAgents/
+
+# 2. launchd に登録して有効化
+launchctl load ~/Library/LaunchAgents/com.naoki.slotdatatool.plist
+```
+
+これで毎日23:30に自動実行されます。
+
+> **注意**: Mac がスリープ中は実行されません。
+> 23:30 に Mac がスリープしていた場合、次の起動時には実行されません（その日の実行はスキップ）。
+
+### 今すぐ手動でテスト実行する
+
+```bash
+launchctl start com.naoki.slotdatatool
+```
+
+### 登録を確認する
+
+```bash
+launchctl list | grep slotdatatool
+```
+
+`-` や `0` が表示されれば正常に登録済みです。
+
+### ログを確認する
+
+```bash
+# ログをリアルタイムで確認（Ctrl+C で終了）
+tail -f logs/update.log
+
+# 最後の50行だけ表示
+tail -50 logs/update.log
+```
+
+### 自動実行を停止・削除する
+
+```bash
+# 一時停止（ファイルは残る）
+launchctl unload ~/Library/LaunchAgents/com.naoki.slotdatatool.plist
+
+# 再開
+launchctl load ~/Library/LaunchAgents/com.naoki.slotdatatool.plist
+```
+
+### 実行時刻を変更したい場合
+
+`launchd/com.naoki.slotdatatool.plist` をテキストエディタで開き、
+`Hour` と `Minute` の数字を変更してから再登録します。
+
+```bash
+# 再登録（変更を反映）
+launchctl unload ~/Library/LaunchAgents/com.naoki.slotdatatool.plist
+cp launchd/com.naoki.slotdatatool.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.naoki.slotdatatool.plist
+```
+
+---
+
 ## スクリプト一覧
 
 | スクリプト | 用途 |
@@ -281,6 +351,7 @@ python scripts/toggle_stores.py --off 1 2
 
 ## 今後の予定
 
-- [ ] GitHub Actions による毎日の自動実行
+- [x] Mac launchd による毎日の自動実行
+- [ ] GitHub Actions による毎日の自動実行（クラウド化）
 - [ ] 表示画面のデザイン改善（グラフ表示など）
 - [ ] 差枚数・合成確率の推移グラフ

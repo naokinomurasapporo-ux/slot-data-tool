@@ -21,6 +21,9 @@ __pycache__/
 .venv/
 venv/
 
+# ===== ログ（ローカル専用） =====
+logs/*.log
+
 # ===== ツール・エディタ =====
 .DS_Store
 .vscode/

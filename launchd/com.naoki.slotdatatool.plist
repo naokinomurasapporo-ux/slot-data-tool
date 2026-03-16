@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+  <!-- ジョブの識別名（ユニークであれば何でもよい） -->
+  <key>Label</key>
+  <string>com.naoki.slotdatatool</string>
+
+  <!-- 実行するコマンドと引数 -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/nomuranaoki/slot-data-tool/scripts/update_and_publish.sh</string>
+  </array>
+
+  <!-- 毎日 23:30 に実行 -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>23</integer>
+    <key>Minute</key>
+    <integer>30</integer>
+  </dict>
+
+  <!-- 標準出力ログ -->
+  <key>StandardOutPath</key>
+  <string>/Users/nomuranaoki/slot-data-tool/logs/update.log</string>
+
+  <!-- エラーログ（標準出力と同じファイルにまとめる） -->
+  <key>StandardErrorPath</key>
+  <string>/Users/nomuranaoki/slot-data-tool/logs/update.log</string>
+
+  <!-- 作業ディレクトリ -->
+  <key>WorkingDirectory</key>
+  <string>/Users/nomuranaoki/slot-data-tool</string>
+
+  <!-- Mac起動時にエージェントを有効にする -->
+  <key>RunAtLoad</key>
+  <false/>
+
+</dict>
+</plist>
