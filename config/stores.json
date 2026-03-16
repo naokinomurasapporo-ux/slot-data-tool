@@ -16,7 +16,7 @@
   },
   {
     "store_name": "アイランド秋葉原店",
-    "enabled": true,
+    "enabled": false,
     "sort_order": 4
   },
   {
@@ -41,7 +41,7 @@
   },
   {
     "store_name": "エスパス日拓秋葉原駅前店",
-    "enabled": true,
+    "enabled": false,
     "sort_order": 9
   },
   {
