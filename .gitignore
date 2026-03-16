@@ -1,0 +1,28 @@
+# ===== 個人情報・認証情報（必ずgit管理外にする）=====
+# ログイン情報が入る環境変数ファイル
+.env
+# ログイン済みセッション（Cookie等の個人情報が含まれる）
+config/storage_state.json
+
+# ===== データファイル（ローカル専用）=====
+# 取得した生データ・スクリーンショット（サイズが大きく不要）
+data/raw/
+# 日次の判定JSONと集計済みJSON（ローカル処理用）
+data/processed/
+
+# ===== GitHub Pages 用データ（git管理対象）=====
+# docs/data/ は管理対象 → 除外しない
+# docs/index.html も管理対象 → 除外しない
+
+# ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# ===== ツール・エディタ =====
+.DS_Store
+.vscode/
+.idea/
+.claude/

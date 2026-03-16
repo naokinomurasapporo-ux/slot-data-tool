@@ -1,0 +1,77 @@
+[
+  {
+    "store_name": "有料会員登録はこちら >",
+    "enabled": false,
+    "sort_order": 1
+  },
+  {
+    "store_name": "有料会員ログインはこちら",
+    "enabled": false,
+    "sort_order": 2
+  },
+  {
+    "store_name": "マルハン新宿東宝ビル店",
+    "enabled": true,
+    "sort_order": 3
+  },
+  {
+    "store_name": "アイランド秋葉原店",
+    "enabled": true,
+    "sort_order": 4
+  },
+  {
+    "store_name": "Ｄ’ステーション新小岩店",
+    "enabled": true,
+    "sort_order": 5
+  },
+  {
+    "store_name": "スーパーＤ’ステーション錦糸町店",
+    "enabled": true,
+    "sort_order": 6
+  },
+  {
+    "store_name": "本八幡ＵＮＯ",
+    "enabled": true,
+    "sort_order": 7
+  },
+  {
+    "store_name": "エスパス日拓新宿歌舞伎町店",
+    "enabled": true,
+    "sort_order": 8
+  },
+  {
+    "store_name": "エスパス日拓秋葉原駅前店",
+    "enabled": true,
+    "sort_order": 9
+  },
+  {
+    "store_name": "エスパス１３００新小岩北口駅前店",
+    "enabled": true,
+    "sort_order": 10
+  },
+  {
+    "store_name": "パラッツォ船橋店パートII",
+    "enabled": true,
+    "sort_order": 11
+  },
+  {
+    "store_name": "アミューズ千葉店",
+    "enabled": true,
+    "sort_order": 12
+  },
+  {
+    "store_name": "その他の機種はこちら",
+    "enabled": false,
+    "sort_order": 13
+  },
+  {
+    "store_name": "フォローユーザー投稿はこちら",
+    "enabled": false,
+    "sort_order": 14
+  },
+  {
+    "store_name": "サイトセブンに入会する",
+    "enabled": false,
+    "sort_order": 15
+  }
+]

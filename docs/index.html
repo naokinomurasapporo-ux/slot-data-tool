@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ジャグラー 30日判定</title>
+  <style>
+    /* ===== リセット・ベース ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      font-size: 13px;
+      background: #eef0f3;
+      color: #222;
+    }
+
+    /* ===== ヘッダー ===== */
+    .header {
+      background: #1e2d3d;
+      color: white;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    }
+    .header h1 { font-size: 15px; white-space: nowrap; letter-spacing: .03em; }
+    #storeSelect {
+      flex: 1;
+      min-width: 180px;
+      font-size: 14px;
+      padding: 5px 8px;
+      border: none;
+      border-radius: 4px;
+      background: white;
+      color: #222;
+    }
+
+    /* ===== コントロールバー ===== */
+    .controls {
+      background: white;
+      padding: 8px 14px;
+      border-bottom: 1px solid #d8dde3;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      position: sticky;
+      top: 44px;
+      z-index: 99;
+    }
+    .controls-label { font-weight: 600; color: #666; white-space: nowrap; }
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      user-select: none;
+      padding: 3px 0;
+    }
+    .controls input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #2563eb; }
+
+    /* ===== コンテンツエリア ===== */
+    #content { padding: 12px 10px 32px; }
+    .loading { padding: 40px; text-align: center; color: #888; font-size: 14px; }
+    .error-msg { padding: 20px; color: #c0392b; font-size: 13px; }
+
+    /* ===== 機種セクション ===== */
+    .machine-section {
+      margin-bottom: 14px;
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .machine-header {
+      background: #2c3e50;
+      color: white;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .machine-rule {
+      font-size: 11px;
+      font-weight: 400;
+      opacity: 0.65;
+    }
+
+    /* ===== テーブルラッパー（横スクロール）===== */
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ===== テーブル本体 ===== */
+    table {
+      border-collapse: collapse;
+      width: max-content;
+    }
+    th, td {
+      border: 1px solid #e0e4ea;
+      padding: 4px 6px;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    th {
+      background: #f3f5f8;
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+    }
+    /* 最新日付を強調 */
+    th.latest-date {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    /* ===== 台番号列（固定）===== */
+    .col-unit {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      min-width: 50px;
+      max-width: 64px;
+      background: #f8f9fb;
+      font-weight: 700;
+      font-size: 12px;
+      border-right: 2px solid #c8cdd5;
+    }
+    th.col-unit {
+      background: #e8ecf1;
+      z-index: 3;
+    }
+
+    /* ===== 日付データセル ===== */
+    .date-cell { min-width: 50px; }
+    .no-data { color: #d0d5dd; font-size: 12px; }
+
+    /* ===== 判定カラー ===== */
+    .j-ss { background: #16a34a; color: white; }        /* ◎ 濃い緑 */
+    .j-s  { background: #bbf7d0; color: #14532d; }      /* ○ 薄い緑 */
+    .j-a  { background: #fef9c3; color: #854d0e; }      /* △ 黄 */
+    .j-b  { background: #fee2e2; color: #991b1b; }      /* × 薄い赤 */
+    .j-blank { background: white; color: #c8cdd5; }     /* blank */
+
+    /* ===== セル内テキスト ===== */
+    .cell-judge { font-size: 15px; font-weight: 700; line-height: 1; display: block; }
+    .cell-sub {
+      font-size: 10px;
+      line-height: 1.6;
+      display: block;
+      margin-top: 2px;
+      color: inherit;
+      opacity: 0.8;
+    }
+
+    /* ===== ステータスバー ===== */
+    #status {
+      padding: 6px 14px;
+      font-size: 11px;
+      color: #999;
+      background: white;
+      border-top: 1px solid #e8ecf1;
+      text-align: right;
+    }
+
+    /* ===== 凡例 ===== */
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 6px 14px;
+      background: #f8f9fb;
+      border-bottom: 1px solid #e0e4ea;
+      font-size: 11px;
+    }
+    .legend-label { color: #888; font-weight: 600; }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 20px;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="header">
+  <h1>🎰 ジャグラー 30日判定</h1>
+  <select id="storeSelect"><option>読み込み中...</option></select>
+</div>
+
+<!-- 表示項目コントロール -->
+<div class="controls">
+  <span class="controls-label">表示項目：</span>
+  <label><input type="checkbox" id="show_judge" checked> 判定</label>
+  <label><input type="checkbox" id="show_combined"> 合算(1/N)</label>
+  <label><input type="checkbox" id="show_rb"> RB回数</label>
+  <label><input type="checkbox" id="show_bb"> BB回数</label>
+  <label><input type="checkbox" id="show_games"> G数</label>
+</div>
+
+<!-- 凡例 -->
+<div class="legend">
+  <span class="legend-label">判定：</span>
+  <span class="legend-item j-ss">◎</span><span> 高設定濃厚</span>
+  <span class="legend-item j-s">○</span><span> 高設定有望</span>
+  <span class="legend-item j-a">△</span><span> 要注目</span>
+  <span class="legend-item j-b">×</span><span> 低設定寄り</span>
+  <span style="color:#aaa">　─ : データなし</span>
+</div>
+
+<!-- テーブル表示エリア -->
+<div id="content">
+  <div class="loading">店舗データを読み込み中...</div>
+</div>
+
+<!-- ステータスバー -->
+<div id="status"></div>
+
+<script>
+'use strict';
+
+// ===== 定数 =====
+const JUDGE_CLASS = { '◎': 'j-ss', '○': 'j-s', '△': 'j-a', '×': 'j-b', 'blank': 'j-blank' };
+const FIELD_IDS = ['show_judge', 'show_combined', 'show_rb', 'show_bb', 'show_games'];
+
+let currentData = null;
+
+// ===== ユーティリティ =====
+
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+/** "20260316" → "3/16" */
+function fmtDate(s) {
+  return `${parseInt(s.slice(4, 6))}/${parseInt(s.slice(6, 8))}`;
+}
+
+/** 表示項目チェック状態を取得 */
+function getShow() {
+  return {
+    judge:    document.getElementById('show_judge').checked,
+    combined: document.getElementById('show_combined').checked,
+    rb:       document.getElementById('show_rb').checked,
+    bb:       document.getElementById('show_bb').checked,
+    games:    document.getElementById('show_games').checked,
+  };
+}
+
+// ===== セル描画 =====
+
+function renderCell(dayData, show, isLatest) {
+  if (!dayData) {
+    return `<td class="date-cell no-data${isLatest ? ' latest-date' : ''}">─</td>`;
+  }
+
+  const judge = dayData.judge || 'blank';
+  const cls = JUDGE_CLASS[judge] ?? 'j-blank';
+
+  const lines = [];
+
+  if (show.judge) {
+    const label = judge !== 'blank' ? judge : '─';
+    lines.push(`<span class="cell-judge">${esc(label)}</span>`);
+  }
+
+  const subs = [];
+  const val = (key) => (dayData[key] && dayData[key] !== '--') ? dayData[key] : null;
+
+  if (show.combined) subs.push(val('combined') ? `1/${val('combined')}` : '─');
+  if (show.rb)       subs.push(val('rb')       ? `R:${val('rb')}`       : '─');
+  if (show.bb)       subs.push(val('bb')       ? `B:${val('bb')}`       : '─');
+  if (show.games)    subs.push(val('games')    ? `${val('games')}G`     : '─');
+
+  if (subs.length > 0) {
+    lines.push(`<span class="cell-sub">${subs.join('<br>')}</span>`);
+  }
+
+  const extra = isLatest ? ' latest-date' : '';
+  return `<td class="date-cell ${cls}${extra}">${lines.join('')}</td>`;
+}
+
+// ===== テーブル描画 =====
+
+function renderTable(data) {
+  if (!data) return;
+
+  const show = getShow();
+  const dates = data.dates;
+  const latestDate = dates[dates.length - 1] ?? '';
+  const container = document.getElementById('content');
+
+  if (!show.judge && !show.combined && !show.rb && !show.bb && !show.games) {
+    container.innerHTML = '<div class="loading">表示項目を1つ以上選択してください</div>';
+    return;
+  }
+
+  let html = '';
+
+  for (const machine of data.machines) {
+    html += `
+      <div class="machine-section">
+        <div class="machine-header">
+          ${esc(machine.name)}
+          <span class="machine-rule">ルール: ${esc(machine.rule_used)}</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr>
+              <th class="col-unit">台番</th>`;
+
+    for (const d of dates) {
+      const isLatest = d === latestDate;
+      html += `<th class="date-cell${isLatest ? ' latest-date' : ''}">${fmtDate(d)}</th>`;
+    }
+
+    html += `</tr></thead><tbody>`;
+
+    for (const unit of machine.units) {
+      html += `<tr><td class="col-unit">${esc(unit.unit)}</td>`;
+      for (const d of dates) {
+        html += renderCell(unit.days[d] ?? null, show, d === latestDate);
+      }
+      html += `</tr>`;
+    }
+
+    html += `</tbody></table></div></div>`;
+  }
+
+  container.innerHTML = html;
+
+  // 各テーブルを最新日付（右端）までスクロール
+  document.querySelectorAll('.table-wrapper').forEach(el => {
+    el.scrollLeft = el.scrollWidth;
+  });
+
+  document.getElementById('status').textContent =
+    `${data.store_name} ／ ${dates.length}日分 ／ 生成日: ${data.generated_at}`;
+}
+
+// ===== データ読み込み =====
+
+async function loadStore(fileName) {
+  document.getElementById('content').innerHTML = '<div class="loading">読み込み中...</div>';
+  document.getElementById('status').textContent = '';
+  try {
+    // 日本語ファイル名をURLエンコード（GitHub Pages で必要）
+    const res = await fetch(`data/${encodeURIComponent(fileName)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${fileName}`);
+    currentData = await res.json();
+    renderTable(currentData);
+  } catch (e) {
+    document.getElementById('content').innerHTML =
+      `<div class="error-msg">読み込みエラー: ${esc(e.message)}</div>`;
+  }
+}
+
+// ===== 初期化 =====
+
+async function init() {
+  try {
+    const res = await fetch('data/stores.json');
+    if (!res.ok) throw new Error(`stores.json が見つかりません (HTTP ${res.status})`);
+    const manifest = await res.json();
+
+    const select = document.getElementById('storeSelect');
+    select.innerHTML = '';
+    for (const s of manifest.stores) {
+      const opt = document.createElement('option');
+      opt.value = s.file;
+      opt.textContent = `${s.store_name}（${s.date_count}日）`;
+      select.appendChild(opt);
+    }
+
+    select.addEventListener('change', () => loadStore(select.value));
+
+    if (manifest.stores.length > 0) {
+      loadStore(manifest.stores[0].file);
+    } else {
+      document.getElementById('content').innerHTML =
+        '<div class="loading">店舗データがありません。<br>build_30day_store_json.py を実行してください。</div>';
+    }
+  } catch (e) {
+    document.getElementById('content').innerHTML =
+      `<div class="error-msg">
+        初期化エラー: ${esc(e.message)}<br><br>
+        <b>ローカルで確認するには：</b><br>
+        プロジェクトルートで <code>python -m http.server 8080</code> を実行後、<br>
+        <a href="http://localhost:8080/docs/">http://localhost:8080/docs/</a> を開いてください。
+      </div>`;
+  }
+}
+
+// チェックボックス変更時に再描画
+FIELD_IDS.forEach(id => {
+  document.getElementById(id).addEventListener('change', () => renderTable(currentData));
+});
+
+init();
+</script>
+</body>
+</html>

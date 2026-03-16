@@ -1,0 +1,218 @@
+# slot-data-tool
+
+サイトセブン スマホサイトからジャグラーデータを自動取得し、
+**GitHub Pages** で30日間の高設定判定一覧を表示するツールです。
+
+---
+
+## できること
+
+- 複数店舗のジャグラーデータを一括取得（自動スクレイピング）
+- 機種ごと・台番号ごとに高設定判定（◎/○/△/×）を付与
+- 過去30日分を横持ち表で表示する Web 画面を生成
+- GitHub Pages で公開 → URL を共有するだけで誰でも閲覧可能
+
+---
+
+## フォルダ構成
+
+```
+slot-data-tool/
+├── config/
+│   ├── stores.json            # 取得対象の店舗リスト
+│   ├── rules.json             # 高設定判定ルール（機種別しきい値）
+│   ├── test_store.json        # 動作確認用の1店舗設定
+│   └── storage_state.json     # ログイン済みセッション ※Gitに含めない
+├── data/
+│   ├── raw/                   # 取得した生データ・スクリーンショット ※Gitに含めない
+│   └── processed/             # 日次の判定JSONと集計済みJSON ※Gitに含めない
+├── docs/                      # GitHub Pages 公開用（Gitで管理）
+│   ├── index.html             # 30日判定 Web 画面
+│   └── data/                  # Web 画面が読み込むJSONデータ
+│       ├── stores.json        # 店舗一覧マニフェスト
+│       └── 30d_店舗名.json    # 店舗ごとの30日横持ちデータ
+├── scripts/
+│   ├── save_session.py        # 初回のみ: 手動ログイン → セッション保存
+│   ├── run_all_stores_pipeline.py  # 毎日Step1: 全店舗データ取得 + 判定
+│   ├── build_30day_store_json.py   # 毎日Step2: 30日横持ちデータ生成
+│   ├── run_one_store_pipeline.py   # 1店舗だけ処理したいとき
+│   ├── judge_jugler.py             # 高設定判定ロジック
+│   └── poc_scrape_one_store.py     # スクレイピング処理（共通関数）
+├── .gitignore
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 初回セットアップ
+
+### 1. Python の確認
+
+```bash
+python3 --version
+```
+
+Python 3.9 以上が表示されれば OK。
+
+### 2. 仮想環境の作成と有効化
+
+```bash
+cd ~/slot-data-tool
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+プロンプトの先頭に `(.venv)` が表示されたら成功。
+
+### 3. ライブラリのインストール
+
+```bash
+pip install -r requirements.txt
+playwright install chromium
+```
+
+### 4. 取得対象の店舗を設定する
+
+`config/stores.json` を編集し、取得したい店舗名を記入します。
+
+```json
+[
+  { "store_name": "○○パチンコ店", "enabled": true, "sort_order": 1 },
+  { "store_name": "△△スロット店", "enabled": true, "sort_order": 2 }
+]
+```
+
+> 店舗名はサイトセブンの「マイホール」に登録されている名称と一致させてください。
+
+### 5. セッション保存（初回のみ）
+
+```bash
+python scripts/save_session.py
+```
+
+1. ブラウザが自動的に開く
+2. サイトセブンにログインする
+3. ログイン完了後、ターミナルに戻って **Enter** を押す
+4. `config/storage_state.json` に保存されて終了
+
+> セッションが切れた（ログアウトされた）場合はこのコマンドを再実行してください。
+
+---
+
+## 毎日の使い方（データ更新）
+
+毎日以下の 2 コマンドを実行するだけです。
+
+### Step 1: データ取得 + 高設定判定
+
+```bash
+python scripts/run_all_stores_pipeline.py
+```
+
+- `config/stores.json` の `enabled: true` な店舗を順番に処理
+- 結果は `data/processed/YYYYMMDD_店舗名_judged.json` に保存
+
+### Step 2: 30日横持ちデータ生成 + Web用データ更新
+
+```bash
+python scripts/build_30day_store_json.py
+```
+
+- `data/processed/` の蓄積データから過去30日分を集計
+- `docs/data/` に Web 画面用の JSON を出力（GitHub Pages で使用）
+
+### Step 3: GitHub に push（Web 画面を更新）
+
+```bash
+git add docs/data/
+git commit -m "データ更新 $(date +%Y%m%d)"
+git push
+```
+
+数分後に GitHub Pages の URL が最新データに更新されます。
+
+---
+
+## GitHub Pages 公開手順
+
+### 1. GitHub にリポジトリを作成する
+
+- GitHub にログイン → **New repository**
+- リポジトリ名: `slot-data-tool`（任意）
+- **Private** を推奨（データを非公開にしたい場合）
+- 「Initialize this repository」はチェックしない
+
+### 2. ローカルと GitHub を接続する（初回のみ）
+
+```bash
+cd ~/slot-data-tool
+git init
+git add .
+git commit -m "初回コミット"
+git remote add origin https://github.com/あなたのユーザー名/slot-data-tool.git
+git push -u origin main
+```
+
+### 3. GitHub Pages を有効にする
+
+1. GitHub のリポジトリページを開く
+2. **Settings** タブ → 左メニューの **Pages**
+3. **Source** を「Deploy from a branch」に設定
+4. **Branch** を `main`、フォルダを `/docs` に設定
+5. **Save** を押す
+
+数分後に以下のような URL で公開されます：
+
+```
+https://あなたのユーザー名.github.io/slot-data-tool/
+```
+
+### 4. ローカルで表示確認する方法
+
+GitHub に push する前にローカルで確認したい場合：
+
+```bash
+python -m http.server 8080
+```
+
+ブラウザで `http://localhost:8080/docs/` を開いてください。
+
+> ⚠️ `docs/index.html` をダブルクリックして直接開いても動きません。
+> 必ず上記のコマンドを使ってください（セキュリティ制限のため）。
+
+---
+
+## スクリプト一覧
+
+| スクリプト | 用途 |
+|---|---|
+| `scripts/save_session.py` | 初回ログイン → セッション保存 |
+| `scripts/run_all_stores_pipeline.py` | 全店舗のデータ取得・判定・保存 |
+| `scripts/run_one_store_pipeline.py` | 1店舗だけ処理（テスト用） |
+| `scripts/build_30day_store_json.py` | 30日横持ちデータ生成・Web用JSON出力 |
+| `scripts/judge_jugler.py` | 高設定判定ロジック（単体実行も可） |
+| `scripts/poc_scrape_one_store.py` | スクレイピング共通関数（直接実行で動作確認も可） |
+| `scripts/export_myhole_stores.py` | マイホール登録店舗一覧の書き出し |
+
+---
+
+## 判定基準（◎/○/△/×）
+
+判定は `config/rules.json` のしきい値に基づきます。
+
+| 判定 | 意味 |
+|---|---|
+| ◎ | 高設定濃厚（G数・合算・RBがすべて条件を満たす） |
+| ○ | 高設定有望 |
+| △ | 要注目（合算またはRBどちらかが基準超え） |
+| × | 低設定寄り |
+| blank | G数不足（判定不可） |
+
+---
+
+## 今後の予定
+
+- [ ] GitHub Actions による毎日の自動実行
+- [ ] 表示画面のデザイン改善（グラフ表示など）
+- [ ] 差枚数・合成確率の推移グラフ

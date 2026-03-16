@@ -1,0 +1,131 @@
+{
+  "_comment": "機種ごとの高設定判定ルール。機種名に部分一致するキーが使われ、一致しない場合は default を使用。",
+  "_threshold_note": {
+    "min_games_blank": "この未満はゲーム数不足で blank（判定なし）",
+    "min_games_circle": "○以上の判定に必要な最低ゲーム数",
+    "min_games_double": "◎判定に必要な最低ゲーム数",
+    "reg_good": "RB出現率（1/N のNの値）の △ 閾値。小さいほど良い。",
+    "reg_better": "RB出現率の ○ 閾値",
+    "reg_best": "RB出現率の ◎ 閾値",
+    "comb_good": "合算出現率（1/N）の △ 閾値",
+    "comb_better": "合算出現率の ○ 閾値",
+    "comb_best": "合算出現率の ◎ 閾値"
+  },
+
+  "default": {
+    "_note": "マイジャグラー系の標準値。未知機種のフォールバック用。",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good": 280,
+    "reg_better": 245,
+    "reg_best": 220,
+    "comb_good": 138,
+    "comb_better": 126,
+    "comb_best": 115
+  },
+
+  "マイジャグラー": {
+    "_note": "RBの設定差が大きい機種。設定6: RB≒1/218, 合算≒1/109。RBを重点指標に。",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good": 280,
+    "reg_better": 245,
+    "reg_best": 220,
+    "comb_good": 138,
+    "comb_better": 126,
+    "comb_best": 115
+  },
+
+  "ネオアイムジャグラー": {
+    "_note": "アイムジャグラー系。設定6: RB≒1/224, 合算≒1/112。マイジャグに近い特性。",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good": 285,
+    "reg_better": 248,
+    "reg_best": 225,
+    "comb_good": 138,
+    "comb_better": 125,
+    "comb_best": 115
+  },
+
+  "ゴーゴージャグラー": {
+    "_note": "BB重視・RBが少ない機種。設定6: BB≒1/205, RB≒1/318, 合算≒1/126。RB閾値を大きく緩め、合算で判断。",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good": 400,
+    "reg_better": 360,
+    "reg_best": 320,
+    "comb_good": 138,
+    "comb_better": 128,
+    "comb_best": 118
+  },
+
+  "ミスタージャグラー": {
+    "_note": "クラシック系。設定6: RB≒1/230, 合算≒1/115。標準より少し緩め。",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good": 290,
+    "reg_better": 255,
+    "reg_best": 230,
+    "comb_good": 140,
+    "comb_better": 127,
+    "comb_best": 115
+  },
+
+  "ファンキージャグラー": {
+    "_note": "BB重視・RBが少ない機種。設定6: BB≒1/210, RB≒1/335, 合算≒1/130。ゴーゴー系と同様にRB閾値を大幅緩和。",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good": 410,
+    "reg_better": 370,
+    "reg_best": 330,
+    "comb_good": 143,
+    "comb_better": 132,
+    "comb_best": 122
+  },
+
+  "ウルトラミラクルジャグラー": {
+    "_note": "RBが多めの機種。設定6: RB≒1/220, 合算≒1/110。",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good": 280,
+    "reg_better": 245,
+    "reg_best": 220,
+    "comb_good": 137,
+    "comb_better": 124,
+    "comb_best": 113
+  },
+
+  "ジャグラーガールズ": {
+    "_note": "RBが多い機種。設定6: RB≒1/199, 合算≒1/107。RB閾値を他機種より厳しく設定。",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good": 260,
+    "reg_better": 225,
+    "reg_best": 205,
+    "comb_good": 135,
+    "comb_better": 120,
+    "comb_best": 110
+  },
+
+  "ハッピージャグラー": {
+    "_note": "RBが多い機種。設定6: BB≒1/227, RB≒1/200, 合算≒1/111。ジャグガールズに近い。",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good": 265,
+    "reg_better": 230,
+    "reg_best": 210,
+    "comb_good": 136,
+    "comb_better": 123,
+    "comb_best": 113
+  }
+}
