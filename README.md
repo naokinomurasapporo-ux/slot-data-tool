@@ -206,10 +206,54 @@ python -m http.server 8080
 
 ---
 
+## 店舗の ON/OFF を切り替える
+
+`config/stores.json` を直接編集しなくても、スクリプトで切り替えられます。
+
+### 対話モード（推奨）
+
+```bash
+python scripts/toggle_stores.py
+```
+
+起動すると店舗一覧が番号付きで表示されます。
+番号を入力するたびに ON/OFF が切り替わり、`s` で保存、`q` で破棄して終了です。
+
+```
+  番号  状態   店舗名
+  ──────────────────────────────────────────────────
+  [ 1]  ○ OFF  有料会員登録はこちら >
+  [ 3]  ● ON   マルハン新宿東宝ビル店
+  ...
+
+>>> 3        ← 3番を切り替え
+>>> 5 6      ← 5番と6番をまとめて切り替え
+>>> s        ← 保存して終了
+```
+
+### コマンドラインオプション
+
+```bash
+# 全店舗まとめて ON
+python scripts/toggle_stores.py --all-on
+
+# 全店舗まとめて OFF
+python scripts/toggle_stores.py --all-off
+
+# 指定した番号だけ ON（複数指定可）
+python scripts/toggle_stores.py --on 3 4 5
+
+# 指定した番号だけ OFF
+python scripts/toggle_stores.py --off 1 2
+```
+
+---
+
 ## スクリプト一覧
 
 | スクリプト | 用途 |
 |---|---|
+| `scripts/toggle_stores.py` | **店舗の ON/OFF を対話式で切り替え** |
 | `scripts/update_and_publish.sh` | **毎日の更新を1コマンドで実行（推奨）** |
 | `scripts/save_session.py` | 初回ログイン → セッション保存 |
 | `scripts/run_all_stores_pipeline.py` | 全店舗のデータ取得・判定・保存 |
