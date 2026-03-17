@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ジャグラー 30日判定</title>
   <style>
+    /* ===== CSS 変数 ===== */
+    :root { --machine-header-top: 80px; }
+
     /* ===== リセット・ベース ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -75,7 +78,9 @@
       margin-bottom: 14px;
       background: white;
       border-radius: 6px;
-      overflow: hidden;
+      /* overflow: clip は overflow: hidden と同じ見た目（border-radius 反映）だが
+         スクロールコンテナを作らないため、子の position:sticky が page スクロールに対して機能する */
+      overflow: clip;
       box-shadow: 0 1px 4px rgba(0,0,0,.08);
     }
     .machine-header {
@@ -88,6 +93,11 @@
       align-items: baseline;
       gap: 8px;
       flex-wrap: wrap;
+      /* ページを縦スクロールしても機種名が上部に貼りつく */
+      position: sticky;
+      top: var(--machine-header-top, 80px);
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,.25);
     }
     .machine-rule {
       font-size: 11px;
@@ -355,8 +365,21 @@ function renderTable(data) {
     el.scrollLeft = el.scrollWidth;
   });
 
+  // 機種ヘッダーの sticky top を再計算（controls の高さが変わる場合に備えて）
+  updateMachineHeaderTop();
+
   document.getElementById('status').textContent =
     `${data.store_name} ／ ${dates.length}日分 ／ 生成日: ${data.generated_at}`;
+}
+
+// ===== 機種ヘッダーの sticky top を動的計算 =====
+
+function updateMachineHeaderTop() {
+  const header   = document.querySelector('.header');
+  const controls = document.querySelector('.controls');
+  if (!header || !controls) return;
+  const top = header.offsetHeight + controls.offsetHeight;
+  document.documentElement.style.setProperty('--machine-header-top', top + 'px');
 }
 
 // ===== データ読み込み =====
@@ -415,6 +438,13 @@ async function init() {
 // チェックボックス変更時に再描画
 FIELD_IDS.forEach(id => {
   document.getElementById(id).addEventListener('change', () => renderTable(currentData));
+});
+
+// 画面回転・リサイズ時に sticky top を再計算
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(updateMachineHeaderTop, 100);
 });
 
 init();
