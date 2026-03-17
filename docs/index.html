@@ -50,7 +50,7 @@
       border-bottom: 1px solid #d8dde3;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
       flex-wrap: wrap;
       font-size: 12px;
       position: sticky;
@@ -58,6 +58,7 @@
       z-index: 99;
     }
     .controls-label { font-weight: 600; color: #666; white-space: nowrap; }
+    .controls-sep { color: #d0d5dd; }
     .controls label {
       display: flex;
       align-items: center;
@@ -68,18 +69,35 @@
     }
     .controls input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #2563eb; }
 
+    /* ===== モード切り替えボタン ===== */
+    .mode-btn {
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1.5px solid #c8cdd5;
+      border-radius: 4px;
+      background: white;
+      color: #555;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .12s, color .12s;
+    }
+    .mode-btn.active {
+      background: #1e2d3d;
+      color: white;
+      border-color: #1e2d3d;
+    }
+
     /* ===== コンテンツエリア ===== */
     #content { padding: 12px 10px 32px; }
     .loading { padding: 40px; text-align: center; color: #888; font-size: 14px; }
     .error-msg { padding: 20px; color: #c0392b; font-size: 13px; }
 
-    /* ===== 機種セクション ===== */
+    /* ===== 機種セクション（台別）===== */
     .machine-section {
       margin-bottom: 14px;
       background: white;
       border-radius: 6px;
-      /* overflow: clip は overflow: hidden と同じ見た目（border-radius 反映）だが
-         スクロールコンテナを作らないため、子の position:sticky が page スクロールに対して機能する */
       overflow: clip;
       box-shadow: 0 1px 4px rgba(0,0,0,.08);
     }
@@ -93,7 +111,6 @@
       align-items: baseline;
       gap: 8px;
       flex-wrap: wrap;
-      /* ページを縦スクロールしても機種名が上部に貼りつく */
       position: sticky;
       top: var(--machine-header-top, 80px);
       z-index: 10;
@@ -111,7 +128,7 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* ===== テーブル本体 ===== */
+    /* ===== テーブル本体（共通）===== */
     table {
       border-collapse: collapse;
       width: max-content;
@@ -129,7 +146,6 @@
       font-weight: 600;
       color: #555;
     }
-    /* 最新日付を強調 */
     th.latest-date {
       background: #dbeafe;
       color: #1d4ed8;
@@ -152,18 +168,18 @@
       z-index: 3;
     }
 
-    /* ===== 日付データセル ===== */
+    /* ===== 日付データセル（台別）===== */
     .date-cell { min-width: 50px; }
     .no-data { color: #d0d5dd; font-size: 12px; }
 
     /* ===== 判定カラー ===== */
-    .j-ss { background: #16a34a; color: white; }        /* ◎ 濃い緑 */
-    .j-s  { background: #bbf7d0; color: #14532d; }      /* ○ 薄い緑 */
-    .j-a  { background: #fef9c3; color: #854d0e; }      /* △ 黄 */
-    .j-b  { background: #fee2e2; color: #991b1b; }      /* × 薄い赤 */
-    .j-blank { background: white; color: #c8cdd5; }     /* blank */
+    .j-ss { background: #16a34a; color: white; }
+    .j-s  { background: #bbf7d0; color: #14532d; }
+    .j-a  { background: #fef9c3; color: #854d0e; }
+    .j-b  { background: #fee2e2; color: #991b1b; }
+    .j-blank { background: white; color: #c8cdd5; }
 
-    /* ===== セル内テキスト ===== */
+    /* ===== セル内テキスト（台別）===== */
     .cell-judge { font-size: 15px; font-weight: 700; line-height: 1; display: block; }
     .cell-sub {
       font-size: 10px;
@@ -173,6 +189,61 @@
       color: inherit;
       opacity: 0.8;
     }
+
+    /* ===== 機種サマリーテーブル ===== */
+    .summary-wrap {
+      background: white;
+      border-radius: 6px;
+      overflow: clip;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    /* 機種名列（固定）*/
+    .col-machine {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      min-width: 110px;
+      max-width: 150px;
+      background: #f8f9fb;
+      text-align: left;
+      border-right: 2px solid #c8cdd5;
+      white-space: normal;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+    th.col-machine {
+      background: #e8ecf1;
+      z-index: 3;
+      font-size: 11px;
+      text-align: center;
+    }
+    .machine-name-main { font-weight: 700; font-size: 12px; display: block; }
+    .machine-name-count { font-size: 10px; color: #888; font-weight: 400; }
+
+    /* サマリーセル */
+    .sum-cell {
+      min-width: 64px;
+      padding: 4px 5px;
+      font-size: 11px;
+      line-height: 1.7;
+      vertical-align: middle;
+      text-align: right;
+    }
+    .sum-cell.latest-date { outline: 2px solid #3b82f6; outline-offset: -2px; }
+
+    /* サマリーセルの背景（○以上比率に応じたヒートマップ）*/
+    .sum-hi   { background: #bbf7d0; }   /* ○以上 30%以上 */
+    .sum-mid  { background: #dcfce7; }   /* ○以上 15〜30% */
+    .sum-lo   { background: white;   }   /* ○以上 1〜15% */
+    .sum-none { background: #f8f9fb; color: #bbb; } /* データなし or 0% */
+
+    /* サマリーセル内3行 */
+    .s-line { display: block; white-space: nowrap; }
+    .s-ss   { color: #15803d; font-weight: 700; }
+    .s-sp   { color: #16a34a; }
+    .s-ap   { color: #d97706; }
+    .s-none { color: #ccc; font-size: 10px; }
 
     /* ===== ステータスバー ===== */
     #status {
@@ -195,6 +266,8 @@
       border-bottom: 1px solid #e0e4ea;
       font-size: 11px;
     }
+    .legend-detail { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .legend-summary { display: none; align-items: center; gap: 14px; flex-wrap: wrap; }
     .legend-label { color: #888; font-weight: 600; }
     .legend-item {
       display: inline-flex;
@@ -206,6 +279,15 @@
       font-weight: 700;
       font-size: 13px;
     }
+    .legend-sum-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+    }
+    .legend-sum-swatch {
+      width: 14px; height: 14px; border-radius: 3px; border: 1px solid #d0d5dd;
+    }
   </style>
 </head>
 <body>
@@ -216,24 +298,39 @@
   <select id="storeSelect"><option>読み込み中...</option></select>
 </div>
 
-<!-- 表示項目コントロール -->
+<!-- コントロールバー -->
 <div class="controls">
-  <span class="controls-label">表示項目：</span>
-  <label><input type="checkbox" id="show_judge" checked> 判定</label>
-  <label><input type="checkbox" id="show_combined"> 合算(1/N)</label>
-  <label><input type="checkbox" id="show_rb"> RB回数</label>
-  <label><input type="checkbox" id="show_bb"> BB回数</label>
-  <label><input type="checkbox" id="show_games"> G数</label>
+  <span class="controls-label">表示：</span>
+  <button class="mode-btn active" data-mode="summary">機種サマリー</button>
+  <button class="mode-btn"        data-mode="detail">台別テーブル</button>
+  <span id="detail-controls" style="display:none">
+    <span class="controls-sep">｜</span>
+    <span class="controls-label">表示項目：</span>
+    <label><input type="checkbox" id="show_judge" checked> 判定</label>
+    <label><input type="checkbox" id="show_combined"> 合算(1/N)</label>
+    <label><input type="checkbox" id="show_rb"> RB回数</label>
+    <label><input type="checkbox" id="show_bb"> BB回数</label>
+    <label><input type="checkbox" id="show_games"> G数</label>
+  </span>
 </div>
 
-<!-- 凡例 -->
+<!-- 凡例（モードで切り替え）-->
 <div class="legend">
-  <span class="legend-label">判定：</span>
-  <span class="legend-item j-ss">◎</span><span> 高設定濃厚</span>
-  <span class="legend-item j-s">○</span><span> 高設定有望</span>
-  <span class="legend-item j-a">△</span><span> 要注目</span>
-  <span class="legend-item j-b">×</span><span> 低設定寄り</span>
-  <span style="color:#aaa">　─ : データなし</span>
+  <div class="legend-detail">
+    <span class="legend-label">判定：</span>
+    <span class="legend-item j-ss">◎</span><span> 高設定濃厚</span>
+    <span class="legend-item j-s">○</span><span> 高設定有望</span>
+    <span class="legend-item j-a">△</span><span> 要注目</span>
+    <span class="legend-item j-b">×</span><span> 低設定寄り</span>
+    <span style="color:#aaa">　─ : データなし</span>
+  </div>
+  <div class="legend-summary">
+    <span class="legend-label">セル色：</span>
+    <span class="legend-sum-item"><span class="legend-sum-swatch" style="background:#bbf7d0"></span>○以上 30%+</span>
+    <span class="legend-sum-item"><span class="legend-sum-swatch" style="background:#dcfce7"></span>○以上 15%+</span>
+    <span class="legend-sum-item"><span class="legend-sum-swatch" style="background:white"></span>○以上 1%+</span>
+    <span class="legend-sum-item"><span class="legend-sum-swatch" style="background:#f8f9fb"></span>データなし</span>
+  </div>
 </div>
 
 <!-- テーブル表示エリア -->
@@ -252,6 +349,7 @@ const JUDGE_CLASS = { '◎': 'j-ss', '○': 'j-s', '△': 'j-a', '×': 'j-b', 'b
 const FIELD_IDS = ['show_judge', 'show_combined', 'show_rb', 'show_bb', 'show_games'];
 
 let currentData = null;
+let currentMode = 'summary'; // 'summary' | 'detail'
 
 // ===== ユーティリティ =====
 
@@ -278,7 +376,138 @@ function getShow() {
   };
 }
 
-// ===== セル描画 =====
+/** パーセント文字列 (xx.x%) */
+function pct(num, denom) {
+  if (denom === 0) return '─';
+  return (num / denom * 100).toFixed(1) + '%';
+}
+
+// ===== モード切り替え =====
+
+function setMode(mode) {
+  currentMode = mode;
+
+  // ボタン状態
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  // 台別用コントロールの表示
+  const dc = document.getElementById('detail-controls');
+  if (dc) dc.style.display = (mode === 'detail') ? 'contents' : 'none';
+
+  // 凡例の切り替え
+  document.querySelector('.legend-detail').style.display  = (mode === 'detail')  ? 'flex' : 'none';
+  document.querySelector('.legend-summary').style.display = (mode === 'summary') ? 'flex' : 'none';
+
+  // 再描画
+  if (currentData) {
+    if (mode === 'summary') renderSummary(currentData);
+    else renderTable(currentData);
+  }
+
+  updateMachineHeaderTop();
+}
+
+// ===== 機種ごとの1日サマリーを計算 =====
+
+/**
+ * 1機種 × 1日のサマリーを計算する。
+ * @returns { total, ss, sPlus, aPlus, sPlusPct } または null（台数0）
+ */
+function calcDaySummary(machine, dateStr) {
+  const total = machine.units.length;
+  if (total === 0) return null;
+
+  let ss = 0, s = 0, a = 0;
+  for (const unit of machine.units) {
+    const day = unit.days[dateStr];
+    if (!day) continue;
+    const j = day.judge;
+    if (j === '◎')      ss++;
+    else if (j === '○') s++;
+    else if (j === '△') a++;
+  }
+
+  return {
+    total,
+    ss,
+    sPlus: ss + s,
+    aPlus: ss + s + a,
+    sPlusPct: (ss + s) / total * 100,
+  };
+}
+
+// ===== 機種サマリー描画 =====
+
+function renderSummary(data) {
+  if (!data) return;
+
+  const dates = data.dates;
+  const latestDate = dates[dates.length - 1] ?? '';
+  const container = document.getElementById('content');
+
+  // 機種を台数の多い順にソート（台数が同じ場合は data.machines の元の並び順を維持）
+  const machines = [...data.machines].sort((a, b) => b.units.length - a.units.length);
+
+  // テーブルヘッダー行
+  let html = `<div class="summary-wrap"><div class="table-wrapper"><table>`;
+  html += `<thead><tr><th class="col-machine">機種名</th>`;
+  for (const d of dates) {
+    const isLatest = d === latestDate;
+    html += `<th class="date-cell${isLatest ? ' latest-date' : ''}">${fmtDate(d)}</th>`;
+  }
+  html += `</tr></thead><tbody>`;
+
+  // データ行
+  for (const machine of machines) {
+    const total = machine.units.length;
+    html += `<tr>`;
+    html += `<td class="col-machine">`;
+    html += `<span class="machine-name-main">${esc(machine.name)}</span>`;
+    html += `<span class="machine-name-count">（${total}台）</span>`;
+    html += `</td>`;
+
+    for (const d of dates) {
+      const isLatest = d === latestDate;
+      const sm = calcDaySummary(machine, d);
+
+      if (!sm || sm.total === 0) {
+        html += `<td class="sum-cell sum-none${isLatest ? ' latest-date' : ''}">`;
+        html += `<span class="s-line s-none">─</span>`;
+        html += `</td>`;
+        continue;
+      }
+
+      // ヒートマップ背景クラス
+      let bgCls = 'sum-lo';
+      if (sm.sPlusPct >= 30) bgCls = 'sum-hi';
+      else if (sm.sPlusPct >= 15) bgCls = 'sum-mid';
+      else if (sm.sPlusPct === 0 && sm.aPlus === 0) bgCls = 'sum-none';
+
+      html += `<td class="sum-cell ${bgCls}${isLatest ? ' latest-date' : ''}">`;
+      html += `<span class="s-line s-ss">◎ ${pct(sm.ss,    sm.total)}</span>`;
+      html += `<span class="s-line s-sp">○+ ${pct(sm.sPlus, sm.total)}</span>`;
+      html += `<span class="s-line s-ap">△+ ${pct(sm.aPlus, sm.total)}</span>`;
+      html += `</td>`;
+    }
+
+    html += `</tr>`;
+  }
+
+  html += `</tbody></table></div></div>`;
+  container.innerHTML = html;
+
+  // 最新日（右端）へスクロール
+  document.querySelectorAll('.table-wrapper').forEach(el => {
+    el.scrollLeft = el.scrollWidth;
+  });
+
+  document.getElementById('status').textContent =
+    `${data.store_name} ／ ${dates.length}日分 ／ ${machines.length}機種 ／ 生成日: ${data.generated_at}`;
+}
+
+// ===== 台別テーブル描画 =====
 
 function renderCell(dayData, show, isLatest) {
   if (!dayData) {
@@ -287,7 +516,6 @@ function renderCell(dayData, show, isLatest) {
 
   const judge = dayData.judge || 'blank';
   const cls = JUDGE_CLASS[judge] ?? 'j-blank';
-
   const lines = [];
 
   if (show.judge) {
@@ -297,7 +525,6 @@ function renderCell(dayData, show, isLatest) {
 
   const subs = [];
   const val = (key) => (dayData[key] && dayData[key] !== '--') ? dayData[key] : null;
-
   if (show.combined) subs.push(val('combined') ? `1/${val('combined')}` : '─');
   if (show.rb)       subs.push(val('rb')       ? `R:${val('rb')}`       : '─');
   if (show.bb)       subs.push(val('bb')       ? `B:${val('bb')}`       : '─');
@@ -310,8 +537,6 @@ function renderCell(dayData, show, isLatest) {
   const extra = isLatest ? ' latest-date' : '';
   return `<td class="date-cell ${cls}${extra}">${lines.join('')}</td>`;
 }
-
-// ===== テーブル描画 =====
 
 function renderTable(data) {
   if (!data) return;
@@ -360,12 +585,10 @@ function renderTable(data) {
 
   container.innerHTML = html;
 
-  // 各テーブルを最新日付（右端）までスクロール
   document.querySelectorAll('.table-wrapper').forEach(el => {
     el.scrollLeft = el.scrollWidth;
   });
 
-  // 機種ヘッダーの sticky top を再計算（controls の高さが変わる場合に備えて）
   updateMachineHeaderTop();
 
   document.getElementById('status').textContent =
@@ -388,11 +611,11 @@ async function loadStore(fileName) {
   document.getElementById('content').innerHTML = '<div class="loading">読み込み中...</div>';
   document.getElementById('status').textContent = '';
   try {
-    // 日本語ファイル名をURLエンコード（GitHub Pages で必要）
     const res = await fetch(`data/${encodeURIComponent(fileName)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${fileName}`);
     currentData = await res.json();
-    renderTable(currentData);
+    if (currentMode === 'summary') renderSummary(currentData);
+    else renderTable(currentData);
   } catch (e) {
     document.getElementById('content').innerHTML =
       `<div class="error-msg">読み込みエラー: ${esc(e.message)}</div>`;
@@ -402,6 +625,9 @@ async function loadStore(fileName) {
 // ===== 初期化 =====
 
 async function init() {
+  // 初期モードを summary に設定（凡例も合わせる）
+  setMode('summary');
+
   try {
     const res = await fetch('data/stores.json');
     if (!res.ok) throw new Error(`stores.json が見つかりません (HTTP ${res.status})`);
@@ -435,9 +661,16 @@ async function init() {
   }
 }
 
-// チェックボックス変更時に再描画
+// モードボタンのクリック
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => setMode(btn.dataset.mode));
+});
+
+// チェックボックス変更時に再描画（台別テーブルモード時のみ有効）
 FIELD_IDS.forEach(id => {
-  document.getElementById(id).addEventListener('change', () => renderTable(currentData));
+  document.getElementById(id).addEventListener('change', () => {
+    if (currentMode === 'detail') renderTable(currentData);
+  });
 });
 
 // 画面回転・リサイズ時に sticky top を再計算
