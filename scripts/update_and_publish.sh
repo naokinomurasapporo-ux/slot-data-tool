@@ -67,7 +67,7 @@ if [ "$DO_SCRAPE" = true ]; then
   line
   log "【Step 1】全店舗データ取得・高設定判定 を開始します"
   line
-  if ! "$VENV_PYTHON" scripts/run_all_stores_pipeline.py; then
+  if ! "$VENV_PYTHON" scripts/run_all_stores_pipeline.py --skip-existing; then
     err "データ取得に失敗しました。処理を中止します。"
     err "エラー内容を確認し、必要なら python scripts/save_session.py を再実行してください。"
     exit 1
