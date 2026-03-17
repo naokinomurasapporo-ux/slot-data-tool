@@ -32,6 +32,7 @@ from poc_scrape_one_store import (
     SESSION_PATH,
     dismiss_overlays,
     click_daiatari_list,
+    click_date_tab,
     click_pachislo_all,
     extract_machine_list,
     extract_slot_data,
@@ -49,15 +50,26 @@ BASE_DIR = Path(__file__).parent.parent
 # スクレイピング
 # ---------------------------------------------------------------------------
 
-def scrape(store_name: str) -> list[dict]:
+def scrape(store_name: str, target_date: str | None = None) -> list[dict]:
     """
     マイホール経由でジャグラー各機種の大当り一覧データを取得する。
+
+    Args:
+        store_name  : 取得対象の店舗名
+        target_date : "YYYYMMDD" 形式の日付。指定した場合、大当り一覧の
+                      日付タブをクリックしてその日のデータを取得する。
+                      None または今日の日付の場合はタブ操作なし（デフォルト表示）。
 
     Returns:
         [{"index": ..., "name": "機種名", "href": "...", "slot_data": [...]}, ...]
         失敗した場合は空リスト
     """
     session_path = BASE_DIR / SESSION_PATH
+    today_str = date.today().strftime("%Y%m%d")
+    need_date_tab = bool(target_date) and target_date != today_str
+
+    if need_date_tab:
+        print(f"  [INFO] 日付タブモード: {target_date} のデータを取得します")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
@@ -154,6 +166,16 @@ def scrape(store_name: str) -> list[dict]:
                 if not click_daiatari_list(page):
                     results.append({**machine, "slot_data": [], "error": "大当り一覧ボタンが見つからなかった"})
                     continue
+
+                # 日付タブの選択（バックフィル時のみ）
+                if need_date_tab:
+                    if not click_date_tab(page, target_date):
+                        results.append({
+                            **machine,
+                            "slot_data": [],
+                            "error": f"日付タブ {target_date} が見つかりませんでした",
+                        })
+                        continue
 
                 slot_data = extract_slot_data(page)
                 unit_count = sum(1 for r in slot_data if "unit" in r)
