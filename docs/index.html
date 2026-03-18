@@ -6,7 +6,10 @@
   <title>ジャグラー 30日判定</title>
   <style>
     /* ===== CSS 変数 ===== */
-    :root { --machine-header-top: 80px; }
+    :root {
+      --thead-top: 80px;        /* 日付ヘッダー sticky（header + controls）*/
+      --machine-header-top: 108px; /* 機種名ヘッダー sticky（thead の下）*/
+    }
 
     /* ===== リセット・ベース ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -168,6 +171,65 @@
       z-index: 3;
     }
 
+    /* ===== 日付ヘッダー sticky バー（overflow-x:auto の外側に配置）===== */
+    /*
+     * <thead> をテーブル内に置くと overflow-x:auto コンテナが縦 sticky を
+     * 妨げるため、<thead> は使わず専用の div バーとして table-wrapper の外側
+     * に配置し、横スクロールは JS で同期する。
+     */
+    .thead-sticky-bar {
+      position: sticky;
+      top: var(--thead-top, 80px);
+      z-index: 15;                  /* 機種名ヘッダー(10) より上 */
+      background: #f3f5f8;
+    }
+    .thead-row {
+      display: flex;
+      align-items: stretch;
+      border-bottom: 2px solid #c8cdd5;
+    }
+    .th-left {
+      flex-shrink: 0;
+      background: #e8ecf1;
+      border-right: 2px solid #c8cdd5;
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      padding: 5px 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      white-space: nowrap;
+      box-sizing: border-box;
+    }
+    .thead-dates-clip {
+      overflow: clip;               /* scroll container にならず clip だけ */
+      flex: 1;
+    }
+    .thead-dates-inner {
+      display: flex;
+    }
+    .th-date {
+      flex-shrink: 0;
+      text-align: center;
+      padding: 5px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      background: #f3f5f8;
+      border-right: 1px solid #e0e4ea;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+    .th-date.latest-date {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
     /* ===== 日付データセル（台別）===== */
     .date-cell { min-width: 50px; }
     .no-data { color: #d0d5dd; font-size: 12px; }
@@ -245,6 +307,24 @@
     .s-ap   { color: #d97706; }
     .s-none { color: #ccc; font-size: 10px; }
 
+    /* ===== 末尾列（固定・末尾サマリー用）===== */
+    .col-tail {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      width: 44px;
+      background: #f8f9fb;
+      font-weight: 700;
+      font-size: 20px;
+      border-right: 2px solid #c8cdd5;
+      text-align: center;
+    }
+    th.col-tail {
+      background: #e8ecf1;
+      z-index: 3;
+      font-size: 11px;
+    }
+
     /* ===== ステータスバー ===== */
     #status {
       padding: 6px 14px;
@@ -302,6 +382,7 @@
 <div class="controls">
   <span class="controls-label">表示：</span>
   <button class="mode-btn active" data-mode="summary">機種サマリー</button>
+  <button class="mode-btn"        data-mode="tail">末尾サマリー</button>
   <button class="mode-btn"        data-mode="detail">台別テーブル</button>
   <span id="detail-controls" style="display:none">
     <span class="controls-sep">｜</span>
@@ -349,7 +430,52 @@ const JUDGE_CLASS = { '◎': 'j-ss', '○': 'j-s', '△': 'j-a', '×': 'j-b', 'b
 const FIELD_IDS = ['show_judge', 'show_combined', 'show_rb', 'show_bb', 'show_games'];
 
 let currentData = null;
-let currentMode = 'summary'; // 'summary' | 'detail'
+let currentMode = 'summary'; // 'summary' | 'tail' | 'detail'
+
+// ===== 列幅定数（sticky バーと body テーブルで共有）=====
+const W_DATE      = 70;  // 日付列の幅(px) — 全モード共通
+const W_SUM_LEFT  = 120; // 機種サマリー: 機種名列
+const W_TAIL_LEFT = 44;  // 末尾サマリー: 末尾列
+const W_UNIT_LEFT = 56;  // 台別テーブル: 台番列
+
+// ===== sticky 日付ヘッダーバーのHTML生成 =====
+
+function makeStickyDateBar(leftLabel, dates, latestDate, leftW) {
+  const items = dates.map(d => {
+    const cls = d === latestDate ? ' latest-date' : '';
+    return `<div class="th-date${cls}" style="width:${W_DATE}px">${fmtDate(d)}</div>`;
+  }).join('');
+  return (
+    `<div class="thead-sticky-bar">` +
+    `<div class="thead-row">` +
+    `<div class="th-left" style="width:${leftW}px;min-width:${leftW}px">${leftLabel}</div>` +
+    `<div class="thead-dates-clip"><div class="thead-dates-inner">${items}</div></div>` +
+    `</div></div>`
+  );
+}
+
+// ===== colgroup HTML生成 =====
+
+function makeColgroup(leftW, dateCount) {
+  return (
+    `<colgroup><col style="width:${leftW}px">` +
+    Array(dateCount).fill(`<col style="width:${W_DATE}px">`).join('') +
+    `</colgroup>`
+  );
+}
+
+// ===== 横スクロール同期（sticky バー ↔ table-wrapper）=====
+
+function syncStickyTheads() {
+  document.querySelectorAll('.table-wrapper').forEach(wrapper => {
+    const section = wrapper.closest('.summary-wrap, .machine-section');
+    const inner   = section?.querySelector('.thead-dates-inner');
+    if (!inner) return;
+    const sync = () => { inner.style.transform = `translateX(-${wrapper.scrollLeft}px)`; };
+    wrapper.addEventListener('scroll', sync);
+    requestAnimationFrame(sync); // 初期位置（右端へスクロール後）を反映
+  });
+}
 
 // ===== ユーティリティ =====
 
@@ -397,13 +523,14 @@ function setMode(mode) {
   if (dc) dc.style.display = (mode === 'detail') ? 'contents' : 'none';
 
   // 凡例の切り替え
-  document.querySelector('.legend-detail').style.display  = (mode === 'detail')  ? 'flex' : 'none';
-  document.querySelector('.legend-summary').style.display = (mode === 'summary') ? 'flex' : 'none';
+  document.querySelector('.legend-detail').style.display  = (mode === 'detail')             ? 'flex' : 'none';
+  document.querySelector('.legend-summary').style.display = (mode === 'summary' || mode === 'tail') ? 'flex' : 'none';
 
   // 再描画
   if (currentData) {
-    if (mode === 'summary') renderSummary(currentData);
-    else renderTable(currentData);
+    if (mode === 'summary')    renderSummary(currentData);
+    else if (mode === 'tail')  renderTailSummary(currentData);
+    else                       renderTable(currentData);
   }
 
   updateMachineHeaderTop();
@@ -438,6 +565,94 @@ function calcDaySummary(machine, dateStr) {
   };
 }
 
+// ===== 末尾ごとの1日サマリーを計算 =====
+
+/**
+ * 全機種のうち台番号末尾が tail（'0'〜'9'）の台を集計する。
+ * 分母はその末尾に該当する全台の設置台数（データ有無に関わらない）。
+ * @returns { total, ss, sPlus, aPlus, sPlusPct } または null（該当台なし）
+ */
+function calcTailDaySummary(data, tail, dateStr) {
+  let total = 0, ss = 0, s = 0, a = 0;
+
+  for (const machine of data.machines) {
+    for (const unit of machine.units) {
+      if (String(unit.unit).slice(-1) !== tail) continue;
+      total++;
+      const day = unit.days[dateStr];
+      if (!day) continue;
+      const j = day.judge;
+      if (j === '◎')      ss++;
+      else if (j === '○') s++;
+      else if (j === '△') a++;
+    }
+  }
+
+  if (total === 0) return null;
+  return {
+    total,
+    ss,
+    sPlus: ss + s,
+    aPlus: ss + s + a,
+    sPlusPct: (ss + s) / total * 100,
+  };
+}
+
+// ===== 末尾サマリー描画 =====
+
+function renderTailSummary(data) {
+  if (!data) return;
+
+  const dates = data.dates;
+  const latestDate = dates[dates.length - 1] ?? '';
+  const container = document.getElementById('content');
+
+  // sticky バーは overflow-x:auto の外側に配置
+  let html = `<div class="summary-wrap">`;
+  html += makeStickyDateBar('末尾', dates, latestDate, W_TAIL_LEFT);
+  html += `<div class="table-wrapper">`;
+  html += `<table style="table-layout:fixed;width:max-content;border-collapse:collapse">`;
+  html += makeColgroup(W_TAIL_LEFT, dates.length);
+  html += `<tbody>`;
+
+  for (const tail of ['0','1','2','3','4','5','6','7','8','9']) {
+    html += `<tr><td class="col-tail">${tail}</td>`;
+
+    for (const d of dates) {
+      const isLatest = d === latestDate;
+      const sm = calcTailDaySummary(data, tail, d);
+
+      if (!sm) {
+        html += `<td class="sum-cell sum-none${isLatest ? ' latest-date' : ''}">`;
+        html += `<span class="s-line s-none">─</span></td>`;
+        continue;
+      }
+
+      let bgCls = 'sum-lo';
+      if (sm.sPlusPct >= 30)      bgCls = 'sum-hi';
+      else if (sm.sPlusPct >= 15) bgCls = 'sum-mid';
+      else if (sm.sPlus === 0 && sm.aPlus === 0) bgCls = 'sum-none';
+
+      html += `<td class="sum-cell ${bgCls}${isLatest ? ' latest-date' : ''}">`;
+      html += `<span class="s-line s-ss">◎ ${pct(sm.ss,    sm.total)}</span>`;
+      html += `<span class="s-line s-sp">○+ ${pct(sm.sPlus, sm.total)}</span>`;
+      html += `<span class="s-line s-ap">△+ ${pct(sm.aPlus, sm.total)}</span>`;
+      html += `</td>`;
+    }
+
+    html += `</tr>`;
+  }
+
+  html += `</tbody></table></div></div>`;
+  container.innerHTML = html;
+
+  document.querySelectorAll('.table-wrapper').forEach(el => { el.scrollLeft = el.scrollWidth; });
+  syncStickyTheads();
+
+  document.getElementById('status').textContent =
+    `${data.store_name} ／ ${dates.length}日分 ／ 末尾サマリー ／ 生成日: ${data.generated_at}`;
+}
+
 // ===== 機種サマリー描画 =====
 
 function renderSummary(data) {
@@ -450,14 +665,13 @@ function renderSummary(data) {
   // 機種を台数の多い順にソート（台数が同じ場合は data.machines の元の並び順を維持）
   const machines = [...data.machines].sort((a, b) => b.units.length - a.units.length);
 
-  // テーブルヘッダー行
-  let html = `<div class="summary-wrap"><div class="table-wrapper"><table>`;
-  html += `<thead><tr><th class="col-machine">機種名</th>`;
-  for (const d of dates) {
-    const isLatest = d === latestDate;
-    html += `<th class="date-cell${isLatest ? ' latest-date' : ''}">${fmtDate(d)}</th>`;
-  }
-  html += `</tr></thead><tbody>`;
+  // sticky バーは overflow-x:auto の外側に配置
+  let html = `<div class="summary-wrap">`;
+  html += makeStickyDateBar('機種名', dates, latestDate, W_SUM_LEFT);
+  html += `<div class="table-wrapper">`;
+  html += `<table style="table-layout:fixed;width:max-content;border-collapse:collapse">`;
+  html += makeColgroup(W_SUM_LEFT, dates.length);
+  html += `<tbody>`;
 
   // データ行
   for (const machine of machines) {
@@ -498,10 +712,8 @@ function renderSummary(data) {
   html += `</tbody></table></div></div>`;
   container.innerHTML = html;
 
-  // 最新日（右端）へスクロール
-  document.querySelectorAll('.table-wrapper').forEach(el => {
-    el.scrollLeft = el.scrollWidth;
-  });
+  document.querySelectorAll('.table-wrapper').forEach(el => { el.scrollLeft = el.scrollWidth; });
+  syncStickyTheads();
 
   document.getElementById('status').textContent =
     `${data.store_name} ／ ${dates.length}日分 ／ ${machines.length}機種 ／ 生成日: ${data.generated_at}`;
@@ -554,23 +766,17 @@ function renderTable(data) {
   let html = '';
 
   for (const machine of data.machines) {
-    html += `
-      <div class="machine-section">
-        <div class="machine-header">
-          ${esc(machine.name)}
-          <span class="machine-rule">ルール: ${esc(machine.rule_used)}</span>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr>
-              <th class="col-unit">台番</th>`;
-
-    for (const d of dates) {
-      const isLatest = d === latestDate;
-      html += `<th class="date-cell${isLatest ? ' latest-date' : ''}">${fmtDate(d)}</th>`;
-    }
-
-    html += `</tr></thead><tbody>`;
+    // sticky バーを machine-header より先（DOM上位）に配置 → 日付が上位に固定
+    html += `<div class="machine-section">`;
+    html += makeStickyDateBar('台番', dates, latestDate, W_UNIT_LEFT);
+    html += `<div class="machine-header">`;
+    html += `${esc(machine.name)}`;
+    html += `<span class="machine-rule">ルール: ${esc(machine.rule_used)}</span>`;
+    html += `</div>`;
+    html += `<div class="table-wrapper">`;
+    html += `<table style="table-layout:fixed;width:max-content;border-collapse:collapse">`;
+    html += makeColgroup(W_UNIT_LEFT, dates.length);
+    html += `<tbody>`;
 
     for (const unit of machine.units) {
       html += `<tr><td class="col-unit">${esc(unit.unit)}</td>`;
@@ -585,24 +791,31 @@ function renderTable(data) {
 
   container.innerHTML = html;
 
-  document.querySelectorAll('.table-wrapper').forEach(el => {
-    el.scrollLeft = el.scrollWidth;
-  });
-
+  document.querySelectorAll('.table-wrapper').forEach(el => { el.scrollLeft = el.scrollWidth; });
+  syncStickyTheads();
   updateMachineHeaderTop();
 
   document.getElementById('status').textContent =
     `${data.store_name} ／ ${dates.length}日分 ／ 生成日: ${data.generated_at}`;
 }
 
-// ===== 機種ヘッダーの sticky top を動的計算 =====
+// ===== sticky top 値を動的計算 =====
+// 階層: 日付ヘッダー（最上位）→ 機種名ヘッダー → データ行
 
 function updateMachineHeaderTop() {
   const header   = document.querySelector('.header');
   const controls = document.querySelector('.controls');
   if (!header || !controls) return;
+
+  // header + controls の高さ = 日付 sticky バーが貼り付く位置
   const top = header.offsetHeight + controls.offsetHeight;
-  document.documentElement.style.setProperty('--machine-header-top', top + 'px');
+  document.documentElement.style.setProperty('--thead-top', top + 'px');
+
+  // 機種名ヘッダーは sticky バーの下に貼り付く
+  // .thead-sticky-bar の高さを実測（なければ推定値 30px）
+  const bar = document.querySelector('.thead-sticky-bar');
+  const barH = bar ? bar.offsetHeight : 30;
+  document.documentElement.style.setProperty('--machine-header-top', (top + barH) + 'px');
 }
 
 // ===== データ読み込み =====
@@ -614,8 +827,9 @@ async function loadStore(fileName) {
     const res = await fetch(`data/${encodeURIComponent(fileName)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${fileName}`);
     currentData = await res.json();
-    if (currentMode === 'summary') renderSummary(currentData);
-    else renderTable(currentData);
+    if (currentMode === 'summary')    renderSummary(currentData);
+    else if (currentMode === 'tail')  renderTailSummary(currentData);
+    else                              renderTable(currentData);
   } catch (e) {
     document.getElementById('content').innerHTML =
       `<div class="error-msg">読み込みエラー: ${esc(e.message)}</div>`;
