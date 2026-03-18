@@ -381,6 +381,7 @@
 <!-- コントロールバー -->
 <div class="controls">
   <span class="controls-label">表示：</span>
+  <button class="mode-btn"        data-mode="compare">店舗比較</button>
   <button class="mode-btn active" data-mode="summary">機種サマリー</button>
   <button class="mode-btn"        data-mode="tail">末尾サマリー</button>
   <button class="mode-btn"        data-mode="detail">台別テーブル</button>
@@ -429,8 +430,10 @@
 const JUDGE_CLASS = { '◎': 'j-ss', '○': 'j-s', '△': 'j-a', '×': 'j-b', 'blank': 'j-blank' };
 const FIELD_IDS = ['show_judge', 'show_combined', 'show_rb', 'show_bb', 'show_games'];
 
-let currentData = null;
-let currentMode = 'summary'; // 'summary' | 'tail' | 'detail'
+let currentData   = null;
+let currentMode   = 'summary'; // 'summary' | 'tail' | 'detail' | 'compare'
+let storeManifest = null;      // stores.json のマニフェスト
+let allStoresData = null;      // 店舗比較用: 全店舗データキャッシュ
 
 // ===== 列幅定数（sticky バーと body テーブルで共有）=====
 const W_DATE      = 70;  // 日付列の幅(px) — 全モード共通
@@ -523,17 +526,137 @@ function setMode(mode) {
   if (dc) dc.style.display = (mode === 'detail') ? 'contents' : 'none';
 
   // 凡例の切り替え
-  document.querySelector('.legend-detail').style.display  = (mode === 'detail')             ? 'flex' : 'none';
-  document.querySelector('.legend-summary').style.display = (mode === 'summary' || mode === 'tail') ? 'flex' : 'none';
+  document.querySelector('.legend-detail').style.display  = (mode === 'detail') ? 'flex' : 'none';
+  document.querySelector('.legend-summary').style.display = ['summary', 'tail', 'compare'].includes(mode) ? 'flex' : 'none';
 
   // 再描画
-  if (currentData) {
-    if (mode === 'summary')    renderSummary(currentData);
-    else if (mode === 'tail')  renderTailSummary(currentData);
-    else                       renderTable(currentData);
+  if (mode === 'compare') {
+    loadAllStoresForComparison().then(renderComparison);
+  } else if (currentData) {
+    if (mode === 'summary')   renderSummary(currentData);
+    else if (mode === 'tail') renderTailSummary(currentData);
+    else                      renderTable(currentData);
   }
 
   updateMachineHeaderTop();
+}
+
+// ===== 店舗比較: 1店舗 × 1日のサマリーを計算 =====
+
+/**
+ * 1店舗分の全ジャグラー台を集計して1日サマリーを返す。
+ * 分母 = その店舗のジャグラー全台数（データ有無に関わらない）。
+ */
+function calcStoreDaySummary(storeData, dateStr) {
+  let total = 0, ss = 0, s = 0, a = 0;
+  for (const machine of storeData.machines) {
+    for (const unit of machine.units) {
+      total++;
+      const day = unit.days[dateStr];
+      if (!day) continue;
+      const j = day.judge;
+      if      (j === '◎') ss++;
+      else if (j === '○') s++;
+      else if (j === '△') a++;
+    }
+  }
+  if (total === 0) return null;
+  return { total, ss, sPlus: ss + s, aPlus: ss + s + a, sPlusPct: (ss + s) / total * 100 };
+}
+
+/** 30日平均の○以上比率を返す（ソート用） */
+function storeAvgSPlus(storeData, dates) {
+  let sum = 0, count = 0;
+  for (const d of dates) {
+    const sm = calcStoreDaySummary(storeData, d);
+    if (sm) { sum += sm.sPlusPct; count++; }
+  }
+  return count ? sum / count : 0;
+}
+
+/** 全店舗データを非同期で読み込む（2回目以降はキャッシュ）*/
+async function loadAllStoresForComparison() {
+  if (allStoresData) return allStoresData;
+  if (!storeManifest || !storeManifest.stores.length) return [];
+
+  document.getElementById('content').innerHTML = '<div class="loading">全店舗データを読み込み中...</div>';
+
+  const results = await Promise.all(
+    storeManifest.stores.map(s =>
+      fetch(`data/${encodeURIComponent(s.file)}`)
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null)
+    )
+  );
+  allStoresData = results.filter(Boolean);
+  return allStoresData;
+}
+
+// ===== 店舗比較描画 =====
+
+function renderComparison(allData) {
+  if (!allData || allData.length === 0) {
+    document.getElementById('content').innerHTML = '<div class="loading">店舗データがありません</div>';
+    return;
+  }
+
+  // 全店舗の日付を統合し、最新30日を使用
+  const dateSet = new Set();
+  for (const d of allData) { for (const dt of d.dates) dateSet.add(dt); }
+  const dates = [...dateSet].sort().slice(-30);
+  const latestDate = dates[dates.length - 1] ?? '';
+
+  // 30日平均の○以上比率で降順ソート
+  const sorted = [...allData].sort((a, b) => storeAvgSPlus(b, dates) - storeAvgSPlus(a, dates));
+
+  const W_STORE = 140;
+  let html = `<div class="summary-wrap">`;
+  html += makeStickyDateBar('店舗名', dates, latestDate, W_STORE);
+  html += `<div class="table-wrapper">`;
+  html += `<table style="table-layout:fixed;width:max-content;border-collapse:collapse">`;
+  html += makeColgroup(W_STORE, dates.length);
+  html += `<tbody>`;
+
+  for (const store of sorted) {
+    const totalUnits = store.machines.reduce((sum, m) => sum + m.units.length, 0);
+    html += `<tr>`;
+    html += `<td class="col-machine">`;
+    html += `<span class="machine-name-main">${esc(store.store_name)}</span>`;
+    html += `<span class="machine-name-count">（${totalUnits}台）</span>`;
+    html += `</td>`;
+
+    for (const d of dates) {
+      const isLatest = d === latestDate;
+      const sm = calcStoreDaySummary(store, d);
+
+      if (!sm) {
+        html += `<td class="sum-cell sum-none${isLatest ? ' latest-date' : ''}">`;
+        html += `<span class="s-line s-none">─</span></td>`;
+        continue;
+      }
+
+      let bgCls = 'sum-lo';
+      if (sm.sPlusPct >= 30)      bgCls = 'sum-hi';
+      else if (sm.sPlusPct >= 15) bgCls = 'sum-mid';
+      else if (sm.sPlusPct === 0 && sm.aPlus === 0) bgCls = 'sum-none';
+
+      html += `<td class="sum-cell ${bgCls}${isLatest ? ' latest-date' : ''}">`;
+      html += `<span class="s-line s-ss">◎ ${pct(sm.ss,    sm.total)}</span>`;
+      html += `<span class="s-line s-sp">○+ ${pct(sm.sPlus, sm.total)}</span>`;
+      html += `<span class="s-line s-ap">△+ ${pct(sm.aPlus, sm.total)}</span>`;
+      html += `</td>`;
+    }
+    html += `</tr>`;
+  }
+
+  html += `</tbody></table></div></div>`;
+  document.getElementById('content').innerHTML = html;
+
+  document.querySelectorAll('.table-wrapper').forEach(el => { el.scrollLeft = el.scrollWidth; });
+  syncStickyTheads();
+
+  document.getElementById('status').textContent =
+    `全 ${sorted.length} 店舗 ／ ${dates.length}日分 ／ 店舗比較（○以上比率 降順）`;
 }
 
 // ===== 機種ごとの1日サマリーを計算 =====
@@ -846,6 +969,7 @@ async function init() {
     const res = await fetch('data/stores.json');
     if (!res.ok) throw new Error(`stores.json が見つかりません (HTTP ${res.status})`);
     const manifest = await res.json();
+    storeManifest = manifest; // 店舗比較モードで使用
 
     const select = document.getElementById('storeSelect');
     select.innerHTML = '';
