@@ -82,6 +82,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="（--backfill と併用）実際には実行せず、欠けている日付だけ表示する",
     )
+    parser.add_argument(
+        "--yes", "-y",
+        action="store_true",
+        help="確認プロンプトをスキップして即実行する（管理画面・自動化用）",
+    )
     return parser.parse_args()
 
 
@@ -414,19 +419,19 @@ def main():
             print("  --dry-run モード: 実際の取得は行いません。")
             return
 
-        print("  ⚠️  注意: サイトセブンは当日データのみ表示されます。")
-        print("     現在表示されているデータで欠けた日付ラベルのファイルを作成します。")
+        print("  日付タブ方式で過去日のデータも取得します。")
         print()
 
-        try:
-            confirm = input("  続行しますか？ [y/N] ").strip().lower()
-        except (EOFError, KeyboardInterrupt):
-            print("\n  キャンセルしました。")
-            return
+        if not args.yes:
+            try:
+                confirm = input("  続行しますか？ [y/N] ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                print("\n  キャンセルしました。")
+                return
 
-        if confirm != "y":
-            print("  キャンセルしました。")
-            return
+            if confirm != "y":
+                print("  キャンセルしました。")
+                return
 
         run_backfill(stores, rules, missing)
         return
