@@ -39,8 +39,10 @@ from poc_scrape_one_store import (
     filter_jugler,
     find_store_in_myhole,
     load_store_config,
+    verify_machine_name_on_page,
+    take_pre_extract_screenshot,
 )
-from judge_jugler import JUDGE_ORDER, find_rule, judge_unit, safe_int
+from judge_jugler import JUDGE_ORDER, find_rule, judge_unit, judge_unit_with_debug, safe_int
 from playwright.sync_api import sync_playwright
 
 BASE_DIR = Path(__file__).parent.parent
@@ -67,6 +69,8 @@ def scrape(store_name: str, target_date: str | None = None) -> list[dict]:
     session_path = BASE_DIR / SESSION_PATH
     today_str = date.today().strftime("%Y%m%d")
     need_date_tab = bool(target_date) and target_date != today_str
+    display_date = target_date if need_date_tab else today_str
+    screenshot_dir = str(BASE_DIR / "data" / "raw")
 
     if need_date_tab:
         print(f"  [INFO] 日付タブモード: {target_date} のデータを取得します")
@@ -169,7 +173,7 @@ def scrape(store_name: str, target_date: str | None = None) -> list[dict]:
 
                 # 日付タブの選択（バックフィル時のみ）
                 if need_date_tab:
-                    if not click_date_tab(page, target_date):
+                    if not click_date_tab(page, target_date, screenshot_dir=screenshot_dir):
                         results.append({
                             **machine,
                             "slot_data": [],
@@ -177,9 +181,69 @@ def scrape(store_name: str, target_date: str | None = None) -> list[dict]:
                         })
                         continue
 
+                # ── 取得直前スクリーンショット（店舗名・機種名・日付を記録） ──
+                take_pre_extract_screenshot(
+                    page, store_name, mname, display_date, screenshot_dir
+                )
+
+                # ── 機種名の確認（日付タブクリック後に別機種へ遷移していないか） ──
+                is_match, found_name = verify_machine_name_on_page(page, mname)
+                if not is_match:
+                    print(
+                        f"    [ERROR] 機種名不一致！\n"
+                        f"            想定: 「{mname}」\n"
+                        f"            実際: 「{found_name}」\n"
+                        f"            → データを保存せずエラー扱いにします"
+                    )
+                    results.append({
+                        **machine,
+                        "slot_data": [],
+                        "error": f"機種名不一致: 想定={mname}, 実際={found_name}",
+                    })
+                    continue
+                print(f"    [OK] 機種名確認: 「{found_name}」")
+
                 slot_data = extract_slot_data(page)
                 unit_count = sum(1 for r in slot_data if "unit" in r)
-                print(f"    → {unit_count} 台分のデータを取得")
+                first_units = [r.get("unit") for r in slot_data[:5] if "unit" in r]
+
+                # ── 取得後の詳細ログ（原因調査用） ──
+                print(
+                    f"    [INFO] 対象日付={display_date} / 機種={mname} / "
+                    f"表の行数={len(slot_data)} / 台番先頭={first_units}"
+                )
+                print(f"    → 有効台数: {unit_count} 台")
+
+                # ── 台数 0 はリトライ（AJAXの描画遅延への対策） ──
+                if unit_count == 0 and need_date_tab:
+                    print(
+                        f"    [WARNING] 台数が 0 件です。3秒待ってリトライします..."
+                    )
+                    page.wait_for_timeout(3000)
+                    slot_data = extract_slot_data(page)
+                    unit_count = sum(1 for r in slot_data if "unit" in r)
+                    first_units = [r.get("unit") for r in slot_data[:5] if "unit" in r]
+                    print(
+                        f"    [INFO] リトライ後: 行数={len(slot_data)} / 台番先頭={first_units}"
+                    )
+                    if unit_count == 0:
+                        print(
+                            f"    [ERROR] リトライ後も 0 件です。"
+                            f"日付タブ切替後のAJAXデータ読み込みに失敗しています。"
+                        )
+                    else:
+                        print(f"    [INFO] リトライ成功: {unit_count} 台取得")
+                elif unit_count == 0:
+                    print(
+                        f"    [WARNING] 台数が 0 件です。"
+                        f"ページ構造が変わった可能性があります。"
+                    )
+                elif unit_count < 3:
+                    print(
+                        f"    [WARN] 取得台数が少なすぎます（{unit_count} 台）。"
+                        f"データに問題がある可能性があります。"
+                    )
+
                 results.append({**machine, "slot_data": slot_data})
 
             except Exception as e:
@@ -196,7 +260,17 @@ def scrape(store_name: str, target_date: str | None = None) -> list[dict]:
 
 def attach_judges(jugler_results: list[dict], rules: dict) -> list[dict]:
     """
-    各台に judge（◎/○/△/×/blank）を付与する。
+    各台に judge（◎/○/△/×/blank）と debug 情報を付与する。
+
+    debug フィールドの内容:
+        base_judge  : 基本判定結果（昇格前）
+        rb_period   : 実測 RB 出現率（1/N のN）
+        target_judge: 昇格先（昇格対象外は None）
+        reg_score   : REG 昇格スコア
+        comb_score  : 合算 昇格スコア
+        promotion   : 昇格したか（bool）
+        final_judge : 最終判定結果
+        reason      : 判定理由の文字列
     """
     judged = []
 
@@ -214,11 +288,16 @@ def attach_judges(jugler_results: list[dict], rules: dict) -> list[dict]:
                 games = int(unit.get("games", 0))
                 rb_count = int(unit.get("rb", 0))
                 combined = int(unit.get("combined", 9999))
-                judge = judge_unit(games, rb_count, combined, rule)
+                judge, debug = judge_unit_with_debug(games, rb_count, combined, rule)
             except (ValueError, TypeError):
                 judge = "blank"
+                debug = {
+                    "base_judge": "blank", "rb_period": None, "target_judge": None,
+                    "reg_score": None, "comb_score": None,
+                    "promotion": False, "final_judge": "blank", "reason": "パースエラー",
+                }
 
-            judged_units.append({**unit, "judge": judge})
+            judged_units.append({**unit, "judge": judge, "debug": debug})
 
         judged.append({
             **{k: v for k, v in machine.items() if k != "slot_data"},
@@ -251,15 +330,18 @@ def print_summary(store_name: str, judged_machines: list[dict], top_n: int = 5):
         top = sorted_units[:top_n]
 
         print(f"【{name}】  (適用ルール: {rule_key})")
-        print(f"  {'台番':>6}  {'G数':>6}  {'RB率(1/N)':>9}  {'合算(1/N)':>9}  {'判定':>4}")
-        print(f"  {'-' * 46}")
+        print(f"  {'台番':>6}  {'G数':>6}  {'RB率(1/N)':>9}  {'合算(1/N)':>9}  {'基本':>4}  {'最終':>4}  判定理由")
+        print(f"  {'-' * 75}")
         for u in top:
             rb_count = safe_int(u.get("rb", 0), default=0)
             games = safe_int(u.get("games", 0), default=0)
             rb_period = games / rb_count if rb_count > 0 else 9999
+            dbg = u.get("debug", {})
             print(
                 f"  {u.get('unit', '?'):>6}  {u.get('games', '?'):>6}  "
-                f"{rb_period:>9.0f}  {u.get('combined', '?'):>9}  {u.get('judge', '?'):>4}"
+                f"{rb_period:>9.0f}  {u.get('combined', '?'):>9}  "
+                f"{dbg.get('base_judge', '?'):>4}  {u.get('judge', '?'):>4}  "
+                f"{dbg.get('reason', '')}"
             )
         print()
 
