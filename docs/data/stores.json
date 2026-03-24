@@ -8,20 +8,8 @@
       "latest_date": "20260324"
     },
     {
-      "store_name": "Ｄ’ステーション新小岩店",
-      "file": "30d_Ｄ’ステーション新小岩店.json",
-      "date_count": 11,
-      "latest_date": "20260324"
-    },
-    {
-      "store_name": "スーパーＤ’ステーション錦糸町店",
-      "file": "30d_スーパーＤ’ステーション錦糸町店.json",
-      "date_count": 11,
-      "latest_date": "20260324"
-    },
-    {
-      "store_name": "アミューズ千葉店",
-      "file": "30d_アミューズ千葉店.json",
+      "store_name": "スーパーＤ'ステーション錦糸町店",
+      "file": "30d_スーパーＤ'ステーション錦糸町店.json",
       "date_count": 11,
       "latest_date": "20260324"
     },
@@ -48,18 +36,6 @@
       "file": "30d_マルハン新宿東宝ビル店.json",
       "date_count": 11,
       "latest_date": "20260324"
-    },
-    {
-      "store_name": "アイランド秋葉原店",
-      "file": "30d_アイランド秋葉原店.json",
-      "date_count": 1,
-      "latest_date": "20260316"
-    },
-    {
-      "store_name": "エスパス日拓秋葉原駅前店",
-      "file": "30d_エスパス日拓秋葉原駅前店.json",
-      "date_count": 1,
-      "latest_date": "20260316"
     }
   ]
 }
