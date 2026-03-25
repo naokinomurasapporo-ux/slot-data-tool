@@ -407,6 +407,31 @@
     #mini-log .log-line.cmd     { color: #c084fc; font-style: italic; }
     #mini-log .log-line.empty   { display: block; height: 0.4em; }
 
+    /* 後処理ステータス表示 */
+    .post-status-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 0.79rem;
+      color: #6b7280;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .publish-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 9px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .publish-badge.published   { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+    .publish-badge.unpublished { background: #fff7ed; color: #92400e; border: 1px solid #fcd34d; }
+    .publish-badge.unknown     { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
+    #last-action-info          { color: #9ca3af; }
+
     /* バリデーションエラーパネル */
     #validation-errors {
       display: none;
@@ -534,6 +559,11 @@
         <button class="post-btn post-btn-rebuild"  onclick="runPostAction('rebuild_30d')">📊 30日JSON再生成</button>
         <button class="post-btn post-btn-publish"  onclick="runPostAction('publish')">🚀 GitHubへ公開</button>
       </div>
+      <!-- ステータス表示 -->
+      <div class="post-status-row">
+        <span>公開状態: <span class="publish-badge unknown" id="publish-badge">—</span></span>
+        <span id="last-action-info">最後の後処理: —</span>
+      </div>
       <p style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">
         日付を空にすると全期間を再判定します。30日JSON再生成・公開は日付指定不要です。
       </p>
@@ -569,6 +599,7 @@
       if (name === 'rules') {
         loadRules();
         loadBackups();
+        initPostStatus();
       }
     }
 
@@ -885,6 +916,7 @@
       document.querySelectorAll('.rule-input.changed').forEach(inp => inp.classList.remove('changed'));
       updateChangeBadge();
 
+      setPublishBadge('unpublished');
       showMsg('ok', `✅ 保存しました（自動バックアップ: ${data.backup}）`);
       loadBackups();
     }
@@ -973,18 +1005,23 @@
     async function runPostAction(actionId) {
       if (miniEs) { miniEs.close(); miniEs = null; }
 
-      clearMiniLog();
-      miniLogCont.style.display = 'block';
-      setPostBtnsDisabled(true);
-
       const dateVal = document.getElementById('post-date').value.trim();
 
       // バリデーション（日付フィールドは rejudge のみ使用）
       if (actionId === 'rejudge' && dateVal && !/^\d{8}$/.test(dateVal)) {
         appendMiniLog('[ERROR] 日付は YYYYMMDD 形式で入力してください（例: 20260325）', 'error');
-        setPostBtnsDisabled(false);
+        miniLogCont.style.display = 'block';
         return;
       }
+
+      // 空欄で全件再判定の場合は確認
+      if (actionId === 'rejudge' && !dateVal) {
+        if (!confirm('日付が空欄のため、全期間（全ファイル）を再判定します。\nファイル数が多い場合は数分かかります。\nよろしいですか？')) return;
+      }
+
+      clearMiniLog();
+      miniLogCont.style.display = 'block';
+      setPostBtnsDisabled(true);
 
       let jobId;
       try {
@@ -1027,6 +1064,14 @@
         const tail = miniLogEl.innerText.slice(-400);
         const isError = /❌|エラー|error|FAIL|traceback/i.test(tail);
         setMiniStatus(false, isError ? '❌ エラーで終了' : '✅ 完了');
+        if (!isError) {
+          updateLastAction(actionId, dateVal);
+          if (actionId === 'publish') {
+            setPublishBadge('published');
+          } else if (actionId === 'rejudge' || actionId === 'rebuild_30d') {
+            setPublishBadge('unpublished');
+          }
+        }
       });
       miniEs.onerror = () => {
         if (!miniEs) return;
@@ -1035,6 +1080,51 @@
         appendMiniLog('[ERROR] 接続が切れました', 'error');
         setMiniStatus(false, '接続エラー');
       };
+    }
+
+    // ─── 後処理ステータス管理 ─────────────────────────
+    function setPublishBadge(status) {
+      const badge = document.getElementById('publish-badge');
+      if (!badge) return;
+      localStorage.setItem('publishStatus', status);
+      if (status === 'published') {
+        badge.className = 'publish-badge published';
+        badge.textContent = '✓ 公開済み';
+      } else if (status === 'unpublished') {
+        badge.className = 'publish-badge unpublished';
+        badge.textContent = '⚠ 未公開の変更あり';
+      } else {
+        badge.className = 'publish-badge unknown';
+        badge.textContent = '—';
+      }
+    }
+
+    function updateLastAction(actionId, targetDate) {
+      const labelMap = { rejudge: '再判定', rebuild_30d: '30日JSON再生成', publish: 'GitHubへ公開' };
+      const now = new Date();
+      const ts = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      const entry = {
+        time: ts,
+        label: labelMap[actionId] || actionId,
+        target: (actionId === 'rejudge') ? (targetDate || '全期間') : '—',
+      };
+      localStorage.setItem('lastPostAction', JSON.stringify(entry));
+      renderLastAction(entry);
+    }
+
+    function renderLastAction(entry) {
+      const el = document.getElementById('last-action-info');
+      if (!el) return;
+      if (!entry) { el.textContent = '最後の後処理: —'; return; }
+      const target = entry.target !== '—' ? `　対象: ${entry.target}` : '';
+      el.textContent = `最後の後処理: ${entry.time}　${entry.label}${target}`;
+    }
+
+    function initPostStatus() {
+      const status = localStorage.getItem('publishStatus') || 'unknown';
+      setPublishBadge(status);
+      const stored = localStorage.getItem('lastPostAction');
+      renderLastAction(stored ? JSON.parse(stored) : null);
     }
 
     // ─── 今日の日付を初期値に設定 ────────────────────
