@@ -4,12 +4,15 @@ slot-data-tool ローカル管理画面
 ブラウザで http://localhost:5000 を開く
 """
 
+import json
 import os
+import shutil
 import subprocess
 import threading
 import uuid
 from datetime import datetime
-from flask import Flask, render_template, Response, jsonify, stream_with_context
+from pathlib import Path
+from flask import Flask, render_template, Response, jsonify, request, stream_with_context
 
 app = Flask(__name__)
 
@@ -17,6 +20,18 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VENV_PYTHON = os.path.join(BASE_DIR, ".venv", "bin", "python")
 SCRIPTS_DIR = os.path.join(BASE_DIR, "scripts")
+
+# 判定ルールファイル
+RULES_PATH = Path(BASE_DIR) / "config" / "rules.json"
+RULES_BACKUP_DIR = Path(BASE_DIR) / "config" / "backups"
+RULES_BACKUP_KEEP = 10  # 保持するバックアップ件数
+
+# 編集可能な数値フィールド（表示順）
+RULE_NUMERIC_FIELDS = [
+    "min_games_blank", "min_games_circle", "min_games_double",
+    "reg_good", "reg_better", "reg_best",
+    "comb_good", "comb_better", "comb_best",
+]
 
 # 実行中・完了したジョブの記録
 # { job_id: { status, lines, returncode, start_time, end_time } }
@@ -46,8 +61,8 @@ ACTIONS = {
     },
     "publish": {
         "label": "GitHubへ公開",
-        "description": "データをコミットしてGitHubへpushします",
-        "cmd": ["bash", os.path.join(SCRIPTS_DIR, "update_and_publish.sh"), "--push-only"],
+        "description": "docs/data/ と requirements.txt を git add → commit → push します",
+        "cmd": ["bash", os.path.join(SCRIPTS_DIR, "publish_to_github.sh")],
     },
 }
 
@@ -63,7 +78,8 @@ def _run_job(job_id: str, cmd: list):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             cwd=BASE_DIR,
-            text=True,
+            encoding='utf-8',
+            errors='replace',
             bufsize=1,
             env=env,
         )
@@ -87,7 +103,7 @@ def _run_job(job_id: str, cmd: list):
 
 @app.route("/")
 def index():
-    return render_template("index.html", actions=ACTIONS)
+    return render_template("index.html", actions=ACTIONS, max_backups=RULES_BACKUP_KEEP)
 
 
 @app.route("/run/<action_id>", methods=["POST"])
@@ -180,6 +196,136 @@ def stream_log(job_id):
             "X-Accel-Buffering": "no",
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# 判定ルール API
+# ---------------------------------------------------------------------------
+
+def _create_backup() -> str:
+    """
+    rules.json のバックアップを config/backups/ に作成する。
+    ファイル名: rules_YYYYMMDD_HHMMSS.json
+    古いバックアップが RULES_BACKUP_KEEP 件を超えたら削除する。
+    作成したファイル名（ベース名のみ）を返す。
+    """
+    RULES_BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_name = f"rules_{ts}.json"
+    shutil.copy2(RULES_PATH, RULES_BACKUP_DIR / backup_name)
+
+    # 古いバックアップを削除
+    backups = sorted(RULES_BACKUP_DIR.glob("rules_*.json"), key=lambda p: p.name)
+    for old in backups[:-RULES_BACKUP_KEEP]:
+        old.unlink()
+
+    return backup_name
+
+
+def _validate_rules(rules: dict) -> list[str]:
+    """
+    rules dict を検証してエラーメッセージのリストを返す。空リストなら OK。
+    """
+    errors = []
+    meta_keys = {"_comment", "_threshold_note"}
+
+    for key, rule in rules.items():
+        if key in meta_keys or not isinstance(rule, dict):
+            continue
+        label = f"【{key}】"
+
+        # 数値フィールドの存在・型チェック
+        for field in RULE_NUMERIC_FIELDS:
+            val = rule.get(field)
+            if val is None:
+                errors.append(f"{label} {field} がありません")
+                continue
+            if not isinstance(val, int) or val < 1 or val > 99999:
+                errors.append(f"{label} {field} = {val} は 1〜99999 の整数である必要があります")
+
+        if errors:
+            continue  # 数値が壊れているなら順序チェックは意味がない
+
+        blank  = rule["min_games_blank"]
+        circle = rule["min_games_circle"]
+        double = rule["min_games_double"]
+        if not (blank < circle < double):
+            errors.append(
+                f"{label} min_games の順序が不正です "
+                f"(blank={blank} < circle={circle} < double={double} である必要があります)"
+            )
+
+        for prefix, labels in [("reg", "REG"), ("comb", "合算")]:
+            good   = rule[f"{prefix}_good"]
+            better = rule[f"{prefix}_better"]
+            best   = rule[f"{prefix}_best"]
+            if not (good > better > best):
+                errors.append(
+                    f"{label} {labels}の順序が不正です "
+                    f"(設定4={good} > 設定5={better} > 設定6={best} である必要があります)"
+                )
+
+    return errors
+
+
+@app.route("/api/rules", methods=["GET"])
+def api_get_rules():
+    """現在の rules.json を返す"""
+    try:
+        with open(RULES_PATH, encoding="utf-8") as f:
+            rules = json.load(f)
+        return jsonify(rules)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/rules", methods=["POST"])
+def api_save_rules():
+    """
+    rules.json を検証・保存する。
+    保存前に自動バックアップを作成する。
+    """
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "リクエストボディが空です"}), 400
+
+    errors = _validate_rules(data)
+    if errors:
+        return jsonify({"error": "バリデーションエラー", "details": errors}), 422
+
+    try:
+        backup_name = _create_backup()
+        with open(RULES_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        return jsonify({"ok": True, "backup": backup_name})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/rules/backup", methods=["POST"])
+def api_backup_rules():
+    """手動バックアップを作成する"""
+    try:
+        backup_name = _create_backup()
+        return jsonify({"ok": True, "backup": backup_name})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/rules/backups", methods=["GET"])
+def api_list_backups():
+    """バックアップ一覧を新しい順で返す"""
+    RULES_BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    backups = sorted(RULES_BACKUP_DIR.glob("rules_*.json"), key=lambda p: p.name, reverse=True)
+    result = []
+    for p in backups[:RULES_BACKUP_KEEP]:
+        stat = p.stat()
+        result.append({
+            "name": p.name,
+            "size_kb": round(stat.st_size / 1024, 1),
+            "modified": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+        })
+    return jsonify(result)
 
 
 if __name__ == "__main__":

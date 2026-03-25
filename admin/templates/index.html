@@ -23,17 +23,43 @@
     .subtitle {
       font-size: 0.85rem;
       color: #666;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
-    /* ボタンエリア */
+    /* ── タブナビ ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 2px solid #d1d5db;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 9px 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      border-radius: 4px 4px 0 0;
+      transition: color 0.15s;
+    }
+    .tab-btn:hover { color: #374151; }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+
+    /* ── タブパネル ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── 操作タブ ── */
     .buttons {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       margin-bottom: 24px;
     }
-
     .action-btn {
       padding: 12px 22px;
       font-size: 0.95rem;
@@ -104,7 +130,6 @@
       cursor: pointer;
     }
     #clear-btn:hover { background: #334155; }
-
     #log {
       padding: 14px 16px;
       height: 420px;
@@ -123,46 +148,299 @@
     #log .log-line.info    { color: #93c5fd; }
     #log .log-line.cmd     { color: #c084fc; font-style: italic; }
     #log .log-line.empty   { display: block; height: 0.5em; }
+
+    /* ── 判定基準タブ ── */
+    .rules-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .rules-toolbar .rule-btn {
+      padding: 8px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      color: #fff;
+      transition: opacity 0.15s;
+    }
+    .rule-btn:hover:not(:disabled) { opacity: 0.85; }
+    .rule-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .rule-btn-backup { background: #64748b; }
+    .rule-btn-save   { background: #2563eb; }
+    #rules-change-badge {
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+      border-radius: 12px;
+      padding: 2px 10px;
+      display: none;
+    }
+    #rules-msg {
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      display: none;
+    }
+    #rules-msg.ok    { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+    #rules-msg.error { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* テーブルラッパー（横スクロール） */
+    .rules-table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .rules-table {
+      border-collapse: collapse;
+      min-width: 860px;
+      width: 100%;
+      font-size: 0.83rem;
+    }
+    .rules-table th {
+      background: #1e293b;
+      color: #cbd5e1;
+      font-weight: 600;
+      padding: 9px 10px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .rules-table th.th-machine { text-align: left; min-width: 160px; }
+    .rules-table th.th-group  { background: #0f172a; font-size: 0.72rem; letter-spacing: 0.03em; }
+    .rules-table td {
+      padding: 5px 6px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .rules-table td.td-machine {
+      text-align: left;
+      font-weight: 600;
+      padding-left: 14px;
+      color: #1e293b;
+      white-space: nowrap;
+    }
+    .rules-table td.td-note {
+      font-size: 0.74rem;
+      color: #94a3b8;
+      text-align: left;
+      padding-left: 10px;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .rules-table tr:last-child td { border-bottom: none; }
+    .rules-table tr:hover td { background: #f8fafc; }
+
+    /* 数値入力セル */
+    .rule-input {
+      width: 58px;
+      padding: 4px 5px;
+      border: 1px solid #d1d5db;
+      border-radius: 5px;
+      font-size: 0.83rem;
+      text-align: center;
+      font-family: "SF Mono", "Menlo", monospace;
+      color: #1e293b;
+      transition: border-color 0.15s, background 0.15s;
+      -moz-appearance: textfield;
+    }
+    .rule-input::-webkit-outer-spin-button,
+    .rule-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .rule-input:focus { outline: none; border-color: #3b82f6; background: #eff6ff; }
+    .rule-input.changed { background: #fefce8; border-color: #f59e0b; }
+    .rule-input.invalid { background: #fef2f2; border-color: #ef4444; }
+
+    /* グループ区切り */
+    .rules-table td.sep-left { border-left: 2px solid #e2e8f0; }
+    .rules-table th.sep-left { border-left: 2px solid #374151; }
+
+    /* バックアップ一覧 */
+    .backup-section {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 16px 18px;
+    }
+    .backup-section h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 10px;
+    }
+    .backup-list {
+      list-style: none;
+    }
+    .backup-list li {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.82rem;
+    }
+    .backup-list li:last-child { border-bottom: none; }
+    .backup-filename {
+      font-family: "SF Mono", "Menlo", monospace;
+      color: #374151;
+      flex: 1;
+    }
+    .backup-meta { color: #9ca3af; white-space: nowrap; }
+    #backup-empty { font-size: 0.82rem; color: #9ca3af; }
+
+    /* バリデーションエラーパネル */
+    #validation-errors {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+    }
+    #validation-errors h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #991b1b;
+      margin-bottom: 6px;
+    }
+    #validation-errors ul {
+      list-style: disc;
+      padding-left: 18px;
+      font-size: 0.82rem;
+      color: #b91c1c;
+    }
   </style>
 </head>
 <body>
 
   <h1>🎰 slot-data-tool 管理画面</h1>
-  <p class="subtitle">ボタンを押すと、データ取得・更新・公開を実行できます（ローカル専用）</p>
+  <p class="subtitle">ローカル専用 — データ取得・公開・判定基準の管理</p>
 
-  <div class="buttons">
-    <button class="action-btn btn-update"   onclick="runAction('update_all')">📥 全店舗更新</button>
-    <button class="action-btn btn-backfill" onclick="runAction('backfill_1')">🔄 昨日分バックフィル</button>
-    <button class="action-btn btn-backfill" onclick="runAction('backfill_3')">🔄 3日分バックフィル</button>
-    <button class="action-btn btn-rebuild"  onclick="runAction('rebuild_30d')">📊 30日データ再生成</button>
-    <button class="action-btn btn-publish"  onclick="runAction('publish')">🚀 GitHubへ公開</button>
+  <!-- ── タブナビ ── -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('ops')">⚙ 操作</button>
+    <button class="tab-btn" onclick="switchTab('rules')">📋 判定基準</button>
   </div>
 
-  <!-- ステータスバー -->
-  <div id="status-bar">
-    <div class="spinner" id="spinner"></div>
-    <div>
-      <span id="status-text"></span>
-      <span id="status-sub" style="font-size:0.8rem;color:#64748b;margin-left:8px;"></span>
+  <!-- ══════════════════════════════
+       操作タブ
+  ══════════════════════════════ -->
+  <div id="tab-ops" class="tab-panel active">
+
+    <div class="buttons">
+      <button class="action-btn btn-update"   onclick="runAction('update_all')">📥 全店舗更新</button>
+      <button class="action-btn btn-backfill" onclick="runAction('backfill_1')">🔄 昨日分バックフィル</button>
+      <button class="action-btn btn-backfill" onclick="runAction('backfill_3')">🔄 3日分バックフィル</button>
+      <button class="action-btn btn-rebuild"  onclick="runAction('rebuild_30d')">📊 30日データ再生成</button>
+      <button class="action-btn btn-publish"  onclick="runAction('publish')">🚀 GitHubへ公開</button>
     </div>
-  </div>
 
-  <!-- ログ表示 -->
-  <div id="log-container">
-    <div class="log-header">
-      <span>実行ログ</span>
-      <button id="clear-btn" onclick="clearLog()">クリア</button>
+    <div id="status-bar">
+      <div class="spinner" id="spinner"></div>
+      <div>
+        <span id="status-text"></span>
+        <span id="status-sub" style="font-size:0.8rem;color:#64748b;margin-left:8px;"></span>
+      </div>
     </div>
-    <div id="log"><span class="log-line info">-- ボタンを押すとここにログが表示されます --</span></div>
-  </div>
+
+    <div id="log-container">
+      <div class="log-header">
+        <span>実行ログ</span>
+        <button id="clear-btn" onclick="clearLog()">クリア</button>
+      </div>
+      <div id="log"><span class="log-line info">-- ボタンを押すとここにログが表示されます --</span></div>
+    </div>
+
+  </div><!-- /tab-ops -->
+
+
+  <!-- ══════════════════════════════
+       判定基準タブ
+  ══════════════════════════════ -->
+  <div id="tab-rules" class="tab-panel">
+
+    <!-- ツールバー -->
+    <div class="rules-toolbar">
+      <button class="rule-btn rule-btn-backup" onclick="backupRules()">💾 バックアップ作成</button>
+      <button class="rule-btn rule-btn-save" id="save-btn" onclick="saveRules()" disabled>保存</button>
+      <span id="rules-change-badge"></span>
+      <span id="rules-msg"></span>
+    </div>
+
+    <!-- バリデーションエラー -->
+    <div id="validation-errors">
+      <h4>⚠ 保存できません — 入力内容を確認してください</h4>
+      <ul id="validation-error-list"></ul>
+    </div>
+
+    <!-- ルールテーブル -->
+    <div class="rules-table-wrap">
+      <table class="rules-table" id="rules-table">
+        <thead>
+          <tr>
+            <th class="th-machine" rowspan="2">機種名</th>
+            <th colspan="3" class="th-group">最低G数</th>
+            <th colspan="3" class="th-group sep-left">RB出現率（1/N）</th>
+            <th colspan="3" class="th-group sep-left">合算出現率（1/N）</th>
+            <th rowspan="2" class="th-group">備考</th>
+          </tr>
+          <tr>
+            <th>blank</th><th>circle</th><th>double</th>
+            <th class="sep-left">設定4</th><th>設定5</th><th>設定6</th>
+            <th class="sep-left">設定4</th><th>設定5</th><th>設定6</th>
+          </tr>
+        </thead>
+        <tbody id="rules-tbody">
+          <tr><td colspan="11" style="padding:20px;text-align:center;color:#94a3b8;">読み込み中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- バックアップ一覧 -->
+    <div class="backup-section">
+      <h3>🗂 バックアップ一覧（最新 {{ max_backups }} 件）</h3>
+      <p id="backup-empty" style="display:none;">バックアップはまだありません</p>
+      <ul class="backup-list" id="backup-list"></ul>
+    </div>
+
+  </div><!-- /tab-rules -->
+
 
   <script>
-    const logEl = document.getElementById('log');
-    const statusBar = document.getElementById('status-bar');
+    // ════════════════════════════════════════════
+    // タブ切り替え
+    // ════════════════════════════════════════════
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        const ids = ['ops', 'rules'];
+        b.classList.toggle('active', ids[i] === name);
+      });
+      document.querySelectorAll('.tab-panel').forEach(p => {
+        p.classList.toggle('active', p.id === 'tab-' + name);
+      });
+      if (name === 'rules') {
+        loadRules();
+        loadBackups();
+      }
+    }
+
+    // ════════════════════════════════════════════
+    // 操作タブ
+    // ════════════════════════════════════════════
+    const logEl      = document.getElementById('log');
+    const statusBar  = document.getElementById('status-bar');
     const statusText = document.getElementById('status-text');
-    const statusSub = document.getElementById('status-sub');
-    const spinner = document.getElementById('spinner');
-    let currentEs = null;  // EventSource
+    const statusSub  = document.getElementById('status-sub');
+    const spinner    = document.getElementById('spinner');
+    let currentEs    = null;
     let logLineCount = 0;
 
     function appendLog(text, cls) {
@@ -174,9 +452,8 @@
       logEl.scrollTop = logEl.scrollHeight;
       if (cls !== 'empty') {
         logLineCount++;
-        if (statusSub && document.getElementById('status-bar').classList.contains('running')) {
+        if (statusSub && statusBar.classList.contains('running'))
           statusSub.textContent = `${logLineCount} 行`;
-        }
       }
     }
 
@@ -187,7 +464,7 @@
 
     function classifyLine(line) {
       if (!line) return 'empty';
-      if (/^\[CMD\]/.test(line)) return 'cmd';
+      if (/^\[CMD\]/.test(line))  return 'cmd';
       if (/^\[INFO\]/.test(line)) return 'info';
       if (/✓|✅|完了|成功|DONE/i.test(line)) return 'success';
       if (/✗|❌|error|エラー|失敗|FAIL|traceback/i.test(line)) return 'error';
@@ -209,22 +486,17 @@
     }
 
     async function runAction(actionId) {
-      // 前の SSE があれば閉じる
       if (currentEs) { currentEs.close(); currentEs = null; }
-
       clearLog();
       setButtonsDisabled(true);
       setStatus('running', '起動中...', '');
 
       const labels = {
-        update_all:  '全店舗更新',
-        backfill_1:  '昨日分バックフィル',
-        backfill_3:  '3日分バックフィル',
-        rebuild_30d: '30日データ再生成',
-        publish:     'GitHubへ公開',
+        update_all: '全店舗更新', backfill_1: '昨日分バックフィル',
+        backfill_3: '3日分バックフィル', rebuild_30d: '30日データ再生成',
+        publish: 'GitHubへ公開',
       };
 
-      // ジョブ開始
       let res;
       try {
         res = await fetch(`/run/${actionId}`, { method: 'POST' });
@@ -246,34 +518,285 @@
       const jobId = data.job_id;
       setStatus('running', `${labels[actionId]} 実行中`, '0 行');
 
-      // SSE でログをリアルタイム受信
       currentEs = new EventSource(`/stream/${jobId}`);
-
-      currentEs.onmessage = (e) => {
-        const line = e.data;
-        appendLog(line, classifyLine(line));
-      };
-
+      currentEs.onmessage = (e) => appendLog(e.data, classifyLine(e.data));
       currentEs.addEventListener('close', () => {
-        currentEs.close();
-        currentEs = null;
+        currentEs.close(); currentEs = null;
         setButtonsDisabled(false);
-        const lastLines = logEl.innerText;
-        if (/❌|エラー|error|FAIL|traceback/i.test(lastLines.slice(-400))) {
+        const tail = logEl.innerText.slice(-400);
+        if (/❌|エラー|error|FAIL|traceback/i.test(tail))
           setStatus('error', '❌ エラーで終了しました', `${logLineCount} 行`);
-        } else {
+        else
           setStatus('done', '✅ 完了しました', `${logLineCount} 行`);
-        }
       });
-
-      currentEs.onerror = (e) => {
-        // SSE が正常終了（close イベント後）でも onerror が発火する場合がある
+      currentEs.onerror = () => {
         if (!currentEs) return;
-        currentEs.close();
-        currentEs = null;
+        currentEs.close(); currentEs = null;
         setButtonsDisabled(false);
         setStatus('error', '接続エラー（サーバーが停止している可能性があります）', '');
       };
+    }
+
+    // ════════════════════════════════════════════
+    // 判定基準タブ
+    // ════════════════════════════════════════════
+
+    // フィールド定義（表示順・列対応）
+    const FIELDS = [
+      'min_games_blank', 'min_games_circle', 'min_games_double',
+      'reg_good', 'reg_better', 'reg_best',
+      'comb_good', 'comb_better', 'comb_best',
+    ];
+    // テーブル上での区切り列インデックス（0始まり、フィールド配列内）
+    const SEP_COLS = new Set([3, 6]);  // reg_good, comb_good の前
+
+    // 機種の並び順（meta キー除外）
+    const META_KEYS = new Set(['_comment', '_threshold_note']);
+
+    let originalRules = null;   // サーバーから取得したオリジナル
+    let editingRules  = null;   // 現在編集中のコピー
+
+    // ─── ルール読み込み ───────────────────────────────
+    async function loadRules() {
+      const tbody = document.getElementById('rules-tbody');
+      tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:#94a3b8;">読み込み中...</td></tr>';
+
+      const res = await fetch('/api/rules');
+      if (!res.ok) {
+        tbody.innerHTML = `<tr><td colspan="11" style="color:#ef4444;padding:16px;">読み込みエラー: ${res.status}</td></tr>`;
+        return;
+      }
+
+      originalRules = await res.json();
+      editingRules  = JSON.parse(JSON.stringify(originalRules));  // deep copy
+
+      renderTable();
+      updateChangeBadge();
+    }
+
+    // ─── テーブル描画 ─────────────────────────────────
+    function renderTable() {
+      const tbody = document.getElementById('rules-tbody');
+      tbody.innerHTML = '';
+
+      const machineKeys = Object.keys(editingRules).filter(k => !META_KEYS.has(k));
+
+      for (const key of machineKeys) {
+        const rule = editingRules[key];
+        if (typeof rule !== 'object') continue;
+
+        const tr = document.createElement('tr');
+
+        // 機種名セル
+        const tdName = document.createElement('td');
+        tdName.className = 'td-machine';
+        tdName.textContent = key;
+        tr.appendChild(tdName);
+
+        // 数値入力セル
+        FIELDS.forEach((field, idx) => {
+          const td = document.createElement('td');
+          if (SEP_COLS.has(idx)) td.classList.add('sep-left');
+
+          const inp = document.createElement('input');
+          inp.type = 'number';
+          inp.className = 'rule-input';
+          inp.min = 1;
+          inp.max = 99999;
+          inp.value = rule[field] ?? '';
+          inp.dataset.machine = key;
+          inp.dataset.field   = field;
+
+          inp.addEventListener('input', () => onInputChange(inp));
+          tr.appendChild(td);
+          td.appendChild(inp);
+        });
+
+        // 備考セル（_note）
+        const tdNote = document.createElement('td');
+        tdNote.className = 'td-note sep-left';
+        tdNote.title = rule._note || '';
+        // _note から機種説明だけ抜き出す（「設定X:」以降を除く）
+        const noteShort = (rule._note || '').replace(/設定[456]:.*$/s, '').trim().replace(/。$/, '');
+        tdNote.textContent = noteShort || '—';
+        tr.appendChild(tdNote);
+
+        tbody.appendChild(tr);
+      }
+    }
+
+    // ─── 入力変更ハンドラ ──────────────────────────────
+    function onInputChange(inp) {
+      const key   = inp.dataset.machine;
+      const field = inp.dataset.field;
+      const val   = parseInt(inp.value, 10);
+
+      if (!editingRules[key]) return;
+      editingRules[key][field] = isNaN(val) ? null : val;
+
+      // 変更・エラーの視覚フィードバック
+      const origVal = originalRules[key]?.[field];
+      const isValid = !isNaN(val) && val >= 1 && val <= 99999;
+      const isChanged = isValid && val !== origVal;
+
+      inp.classList.toggle('invalid',  !isValid);
+      inp.classList.toggle('changed',  isChanged && isValid);
+
+      updateChangeBadge();
+      hideMsg();
+    }
+
+    // ─── 変更バッジ更新 ───────────────────────────────
+    function updateChangeBadge() {
+      const badge  = document.getElementById('rules-change-badge');
+      const saveBtn = document.getElementById('save-btn');
+      const count  = countChanges();
+
+      if (count > 0) {
+        badge.textContent = `変更 ${count} 件`;
+        badge.style.display = 'inline';
+        saveBtn.disabled = false;
+      } else {
+        badge.style.display = 'none';
+        saveBtn.disabled = true;
+      }
+    }
+
+    function countChanges() {
+      if (!originalRules || !editingRules) return 0;
+      let count = 0;
+      for (const key of Object.keys(editingRules)) {
+        if (META_KEYS.has(key)) continue;
+        const orig = originalRules[key] || {};
+        const edit = editingRules[key]  || {};
+        for (const f of FIELDS) {
+          if ((orig[f] ?? null) !== (edit[f] ?? null)) count++;
+        }
+      }
+      return count;
+    }
+
+    // ─── バリデーション（クライアント側） ─────────────
+    function validateClient() {
+      const errors = [];
+      const machineKeys = Object.keys(editingRules).filter(k => !META_KEYS.has(k));
+
+      for (const key of machineKeys) {
+        const r = editingRules[key];
+        const lbl = `【${key}】`;
+
+        for (const f of FIELDS) {
+          const v = r[f];
+          if (v === null || v === undefined || isNaN(v) || v < 1 || v > 99999)
+            errors.push(`${lbl} ${f} は 1〜99999 の整数を入力してください`);
+        }
+        if (errors.length) continue;
+
+        const { min_games_blank: bl, min_games_circle: ci, min_games_double: db } = r;
+        if (!(bl < ci && ci < db))
+          errors.push(`${lbl} 最低G数の順序が不正 (blank=${bl} < circle=${ci} < double=${db})`);
+
+        for (const [pre, label] of [['reg','REG'], ['comb','合算']]) {
+          const g = r[`${pre}_good`], b = r[`${pre}_better`], best = r[`${pre}_best`];
+          if (!(g > b && b > best))
+            errors.push(`${lbl} ${label}の順序が不正 (設定4=${g} > 設定5=${b} > 設定6=${best})`);
+        }
+      }
+      return errors;
+    }
+
+    // ─── 保存 ──────────────────────────────────────────
+    async function saveRules() {
+      hideMsg();
+      const errPanel = document.getElementById('validation-errors');
+      const errList  = document.getElementById('validation-error-list');
+
+      const clientErrors = validateClient();
+      if (clientErrors.length > 0) {
+        errList.innerHTML = clientErrors.map(e => `<li>${e}</li>`).join('');
+        errPanel.style.display = 'block';
+        errPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+      }
+      errPanel.style.display = 'none';
+
+      const saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = '保存中...';
+
+      const res = await fetch('/api/rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingRules),
+      });
+      const data = await res.json();
+
+      saveBtn.textContent = '保存';
+
+      if (!res.ok) {
+        const details = data.details ? '\n' + data.details.join('\n') : '';
+        showMsg('error', `保存失敗: ${data.error}${details}`);
+        saveBtn.disabled = false;
+        return;
+      }
+
+      // 保存成功 → originals を更新
+      originalRules = JSON.parse(JSON.stringify(editingRules));
+      document.querySelectorAll('.rule-input.changed').forEach(inp => inp.classList.remove('changed'));
+      updateChangeBadge();
+
+      showMsg('ok', `✅ 保存しました（自動バックアップ: ${data.backup}）`);
+      loadBackups();
+    }
+
+    // ─── 手動バックアップ ─────────────────────────────
+    async function backupRules() {
+      const res  = await fetch('/api/rules/backup', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok)
+        showMsg('ok', `💾 バックアップ作成: ${data.backup}`);
+      else
+        showMsg('error', `バックアップ失敗: ${data.error}`);
+      loadBackups();
+    }
+
+    // ─── バックアップ一覧 ─────────────────────────────
+    async function loadBackups() {
+      const res  = await fetch('/api/rules/backups');
+      const list = await res.json();
+      const ul   = document.getElementById('backup-list');
+      const empty = document.getElementById('backup-empty');
+      ul.innerHTML = '';
+
+      if (!list.length) {
+        empty.style.display = '';
+        return;
+      }
+      empty.style.display = 'none';
+
+      for (const b of list) {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span class="backup-filename">${b.name}</span>
+          <span class="backup-meta">${b.modified} &nbsp; ${b.size_kb} KB</span>
+        `;
+        ul.appendChild(li);
+      }
+    }
+
+    // ─── メッセージ表示 ───────────────────────────────
+    function showMsg(type, text) {
+      const el = document.getElementById('rules-msg');
+      el.className = type;
+      el.textContent = text;
+      el.style.display = 'inline';
+      // 10秒後に消す
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.style.display = 'none', 10000);
+    }
+    function hideMsg() {
+      const el = document.getElementById('rules-msg');
+      el.style.display = 'none';
     }
   </script>
 </body>
