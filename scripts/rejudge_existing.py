@@ -6,9 +6,11 @@
 読み込み、games / rb / combined から新しい判定ロジックで再判定して上書きする。
 
 使用方法:
-  python scripts/rejudge_existing.py               # 全ファイルを再判定
-  python scripts/rejudge_existing.py --dry-run     # 変化のある台数だけ確認（上書きなし）
-  python scripts/rejudge_existing.py --store アミューズ  # 特定店舗のみ
+  python scripts/rejudge_existing.py                        # 全ファイルを再判定
+  python scripts/rejudge_existing.py --date 20260325        # 指定日だけ再判定
+  python scripts/rejudge_existing.py --dry-run              # 変化のある台数だけ確認（上書きなし）
+  python scripts/rejudge_existing.py --date 20260325 --dry-run  # 指定日の dry-run
+  python scripts/rejudge_existing.py --store アミューズ        # 特定店舗のみ
 
 再判定後は build_30day_store_json.py を実行して30日JSONを再生成すること:
   python scripts/build_30day_store_json.py
@@ -83,11 +85,30 @@ def rejudge_file(path: Path, rules: dict, dry_run: bool = False) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="既存 judged.json を新ロジックで再判定する"
+        description="既存 judged.json を新ロジックで再判定する",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+使用例:
+  python scripts/rejudge_existing.py                         # 全件再判定
+  python scripts/rejudge_existing.py --date 20260325         # 20260325 のみ再判定
+  python scripts/rejudge_existing.py --date 20260325 --dry-run
+  python scripts/rejudge_existing.py --store アミューズ       # 特定店舗のみ
+        """,
     )
     parser.add_argument("--dry-run", action="store_true", help="確認のみ（ファイルを上書きしない）")
+    parser.add_argument(
+        "--date",
+        metavar="YYYYMMDD",
+        default=None,
+        help="指定した日付のファイルだけ処理する（例: 20260325）。省略時は全ファイル",
+    )
     parser.add_argument("--store", metavar="STORE_NAME", default=None, help="特定店舗のみ処理")
     args = parser.parse_args()
+
+    # --date の形式チェック
+    if args.date and not re.match(r"^\d{8}$", args.date):
+        print(f"[ERROR] --date は YYYYMMDD 形式で指定してください（例: 20260325）")
+        sys.exit(1)
 
     if not PROCESSED_DIR.exists():
         print(f"[ERROR] data/processed/ が見つかりません: {PROCESSED_DIR}")
@@ -103,6 +124,8 @@ def main():
             continue
         if not JUDGED_FILE_PATTERN.match(p.name):
             continue
+        if args.date and not p.name.startswith(args.date):
+            continue
         if args.store and args.store not in p.name:
             continue
         target_files.append(p)
@@ -112,7 +135,9 @@ def main():
         sys.exit(0)
 
     mode = "DRY-RUN" if args.dry_run else "上書き"
-    print(f"[INFO] 対象ファイル: {len(target_files)} 件 ({mode}モード)")
+    date_label = f" / 日付フィルタ: {args.date}" if args.date else ""
+    store_label = f" / 店舗フィルタ: {args.store}" if args.store else ""
+    print(f"[INFO] 対象ファイル: {len(target_files)} 件 ({mode}モード{date_label}{store_label})")
     print()
 
     total_files = 0

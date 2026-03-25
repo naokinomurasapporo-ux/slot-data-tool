@@ -296,6 +296,117 @@
     .backup-meta { color: #9ca3af; white-space: nowrap; }
     #backup-empty { font-size: 0.82rem; color: #9ca3af; }
 
+    /* 後処理セクション */
+    .post-section {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 16px 18px;
+      margin-bottom: 20px;
+    }
+    .post-section h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 12px;
+    }
+    .post-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .post-label {
+      font-size: 0.83rem;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+    #post-date {
+      padding: 5px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #374151;
+      font-family: "SF Mono", "Menlo", monospace;
+    }
+    #post-date:focus { outline: none; border-color: #3b82f6; }
+    .post-btn {
+      padding: 7px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      color: #fff;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .post-btn:hover:not(:disabled) { opacity: 0.85; }
+    .post-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .post-btn-rejudge  { background: #7c3aed; }
+    .post-btn-rebuild  { background: #0891b2; }
+    .post-btn-publish  { background: #059669; }
+
+    /* ミニログ */
+    #mini-log-container {
+      background: #0f172a;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 10px;
+      display: none;
+    }
+    .mini-log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 14px;
+      background: #1e293b;
+      font-size: 0.76rem;
+      color: #94a3b8;
+    }
+    #mini-log-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mini-spinner {
+      width: 12px; height: 12px;
+      border: 2px solid #334155;
+      border-top-color: #60a5fa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    #mini-clear-btn {
+      background: none;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      cursor: pointer;
+    }
+    #mini-clear-btn:hover { background: #334155; }
+    #mini-log {
+      padding: 10px 14px;
+      height: 220px;
+      overflow-y: auto;
+      font-family: "SF Mono", "Menlo", "Courier New", monospace;
+      font-size: 0.77rem;
+      line-height: 1.55;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    #mini-log .log-line         { display: block; }
+    #mini-log .log-line.success { color: #4ade80; }
+    #mini-log .log-line.error   { color: #f87171; font-weight: bold; }
+    #mini-log .log-line.warn    { color: #fbbf24; }
+    #mini-log .log-line.info    { color: #93c5fd; }
+    #mini-log .log-line.cmd     { color: #c084fc; font-style: italic; }
+    #mini-log .log-line.empty   { display: block; height: 0.4em; }
+
     /* バリデーションエラーパネル */
     #validation-errors {
       display: none;
@@ -405,10 +516,39 @@
     </div>
 
     <!-- バックアップ一覧 -->
-    <div class="backup-section">
+    <div class="backup-section" style="margin-bottom:20px;">
       <h3>🗂 バックアップ一覧（最新 {{ max_backups }} 件）</h3>
       <p id="backup-empty" style="display:none;">バックアップはまだありません</p>
       <ul class="backup-list" id="backup-list"></ul>
+    </div>
+
+    <!-- 後処理セクション -->
+    <div class="post-section">
+      <h3>⚙ 後処理</h3>
+
+      <div class="post-row">
+        <span class="post-label">対象日付:</span>
+        <input type="text" id="post-date" placeholder="YYYYMMDD（空=全件）" maxlength="8"
+               pattern="\d{8}" title="YYYYMMDD 形式で入力（例: 20260325）">
+        <button class="post-btn post-btn-rejudge" onclick="runPostAction('rejudge')">↺ 指定日を再判定</button>
+        <button class="post-btn post-btn-rebuild"  onclick="runPostAction('rebuild_30d')">📊 30日JSON再生成</button>
+        <button class="post-btn post-btn-publish"  onclick="runPostAction('publish')">🚀 GitHubへ公開</button>
+      </div>
+      <p style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">
+        日付を空にすると全期間を再判定します。30日JSON再生成・公開は日付指定不要です。
+      </p>
+
+      <!-- ミニログ -->
+      <div id="mini-log-container">
+        <div class="mini-log-header">
+          <div id="mini-log-status">
+            <div class="mini-spinner" id="mini-spinner"></div>
+            <span id="mini-log-label">ログ</span>
+          </div>
+          <button id="mini-clear-btn" onclick="clearMiniLog()">クリア</button>
+        </div>
+        <div id="mini-log"></div>
+      </div>
     </div>
 
   </div><!-- /tab-rules -->
@@ -790,14 +930,121 @@
       el.className = type;
       el.textContent = text;
       el.style.display = 'inline';
-      // 10秒後に消す
       clearTimeout(el._timer);
       el._timer = setTimeout(() => el.style.display = 'none', 10000);
     }
     function hideMsg() {
-      const el = document.getElementById('rules-msg');
-      el.style.display = 'none';
+      document.getElementById('rules-msg').style.display = 'none';
     }
+
+    // ════════════════════════════════════════════
+    // 後処理：ミニログ + SSEストリーミング
+    // ════════════════════════════════════════════
+
+    const miniLogEl   = document.getElementById('mini-log');
+    const miniLogCont = document.getElementById('mini-log-container');
+    const miniSpinner = document.getElementById('mini-spinner');
+    const miniLabel   = document.getElementById('mini-log-label');
+    let   miniEs      = null;
+
+    function appendMiniLog(text, cls) {
+      const span = document.createElement('span');
+      span.className = 'log-line' + (cls ? ' ' + cls : '');
+      span.textContent = text;
+      miniLogEl.appendChild(span);
+      miniLogEl.appendChild(document.createTextNode('\n'));
+      miniLogEl.scrollTop = miniLogEl.scrollHeight;
+    }
+
+    function clearMiniLog() {
+      miniLogEl.innerHTML = '';
+    }
+
+    function setMiniStatus(running, label) {
+      miniLabel.textContent = label || 'ログ';
+      miniSpinner.style.display = running ? 'block' : 'none';
+    }
+
+    function setPostBtnsDisabled(disabled) {
+      document.querySelectorAll('.post-btn').forEach(b => b.disabled = disabled);
+    }
+
+    // ─── 後処理実行 ───────────────────────────────────
+    async function runPostAction(actionId) {
+      if (miniEs) { miniEs.close(); miniEs = null; }
+
+      clearMiniLog();
+      miniLogCont.style.display = 'block';
+      setPostBtnsDisabled(true);
+
+      const dateVal = document.getElementById('post-date').value.trim();
+
+      // バリデーション（日付フィールドは rejudge のみ使用）
+      if (actionId === 'rejudge' && dateVal && !/^\d{8}$/.test(dateVal)) {
+        appendMiniLog('[ERROR] 日付は YYYYMMDD 形式で入力してください（例: 20260325）', 'error');
+        setPostBtnsDisabled(false);
+        return;
+      }
+
+      let jobId;
+      try {
+        let res;
+        if (actionId === 'rejudge') {
+          res = await fetch('/run_rejudge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: dateVal || '' }),
+          });
+        } else {
+          res = await fetch(`/run/${actionId}`, { method: 'POST' });
+        }
+
+        const data = await res.json();
+        if (!res.ok) {
+          appendMiniLog(`[ERROR] ${data.error || res.statusText}`, 'error');
+          setPostBtnsDisabled(false);
+          return;
+        }
+        jobId = data.job_id;
+      } catch (e) {
+        appendMiniLog(`[ERROR] サーバーに接続できません: ${e}`, 'error');
+        setPostBtnsDisabled(false);
+        return;
+      }
+
+      const labelMap = {
+        rejudge:     dateVal ? `再判定 (${dateVal})` : '全件再判定',
+        rebuild_30d: '30日JSON再生成',
+        publish:     'GitHubへ公開',
+      };
+      setMiniStatus(true, `${labelMap[actionId]} 実行中...`);
+
+      miniEs = new EventSource(`/stream/${jobId}`);
+      miniEs.onmessage = (e) => appendMiniLog(e.data, classifyLine(e.data));
+      miniEs.addEventListener('close', () => {
+        miniEs.close(); miniEs = null;
+        setPostBtnsDisabled(false);
+        const tail = miniLogEl.innerText.slice(-400);
+        const isError = /❌|エラー|error|FAIL|traceback/i.test(tail);
+        setMiniStatus(false, isError ? '❌ エラーで終了' : '✅ 完了');
+      });
+      miniEs.onerror = () => {
+        if (!miniEs) return;
+        miniEs.close(); miniEs = null;
+        setPostBtnsDisabled(false);
+        appendMiniLog('[ERROR] 接続が切れました', 'error');
+        setMiniStatus(false, '接続エラー');
+      };
+    }
+
+    // ─── 今日の日付を初期値に設定 ────────────────────
+    (function initPostDate() {
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+      document.getElementById('post-date').value = `${y}${m}${d}`;
+    })();
   </script>
 </body>
 </html>

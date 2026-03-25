@@ -25,6 +25,7 @@ SCRIPTS_DIR = os.path.join(BASE_DIR, "scripts")
 RULES_PATH = Path(BASE_DIR) / "config" / "rules.json"
 RULES_BACKUP_DIR = Path(BASE_DIR) / "config" / "backups"
 RULES_BACKUP_KEEP = 10  # 保持するバックアップ件数
+REJUDGE_SCRIPT = os.path.join(SCRIPTS_DIR, "rejudge_existing.py")
 
 # 編集可能な数値フィールド（表示順）
 RULE_NUMERIC_FIELDS = [
@@ -326,6 +327,52 @@ def api_list_backups():
             "modified": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
         })
     return jsonify(result)
+
+
+@app.route("/run_rejudge", methods=["POST"])
+def run_rejudge():
+    """
+    任意日付（または全件）の judged.json を再判定するジョブを起動する。
+    body: { "date": "YYYYMMDD" }  ← 省略で全件
+    """
+    import re as _re
+    data = request.get_json(silent=True) or {}
+    date_str = data.get("date", "").strip()
+
+    if date_str and not _re.match(r"^\d{8}$", date_str):
+        return jsonify({"error": "日付は YYYYMMDD 形式で指定してください"}), 400
+
+    # 同一アクション（日付問わず）が実行中なら弾く
+    for job in jobs.values():
+        if job.get("action_id") == "rejudge" and job.get("status") == "running":
+            return jsonify({"error": "再判定がすでに実行中です。完了をお待ちください。"}), 409
+
+    cmd = [VENV_PYTHON, "-u", REJUDGE_SCRIPT]
+    if date_str:
+        cmd += ["--date", date_str]
+        label = f"再判定 ({date_str})"
+        desc  = f"{date_str} の judged.json を新ルールで再判定します"
+    else:
+        label = "全件再判定"
+        desc  = "全 judged.json を新ルールで再判定します"
+
+    job_id = str(uuid.uuid4())[:8]
+    jobs[job_id] = {
+        "action_id":   "rejudge",
+        "label":       label,
+        "description": desc,
+        "cmd_display": " ".join(
+            os.path.basename(str(c)) if i == 0 else str(c)
+            for i, c in enumerate(cmd)
+        ),
+        "status":     "starting",
+        "lines":      [],
+        "returncode": None,
+        "start_time": datetime.now().strftime("%H:%M:%S"),
+        "end_time":   None,
+    }
+    threading.Thread(target=_run_job, args=(job_id, cmd), daemon=True).start()
+    return jsonify({"job_id": job_id})
 
 
 if __name__ == "__main__":
