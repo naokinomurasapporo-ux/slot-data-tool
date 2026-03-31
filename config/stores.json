@@ -21,7 +21,7 @@
   },
   {
     "store_name": "Ｄ’ステーション新小岩店",
-    "enabled": true,
+    "enabled": false,
     "sort_order": 5
   },
   {
@@ -56,7 +56,7 @@
   },
   {
     "store_name": "アミューズ千葉店",
-    "enabled": true,
+    "enabled": false,
     "sort_order": 12
   },
   {

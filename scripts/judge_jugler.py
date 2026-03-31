@@ -109,6 +109,9 @@ def _calc_score(actual: float, lower: float, upper: float) -> float:
       score > 1.0 : 昇格先基準をさらに上回る
       score < 0   : 昇格元基準より悪い
     """
+    if lower == upper:
+        # 閾値が同一（設定5=設定6など）の場合: 以下なら確実に達成、超えていれば確実に未達
+        return 999.0 if actual <= upper else -999.0
     return (lower - actual) / (lower - upper)
 
 

@@ -14,119 +14,119 @@
   },
 
   "default": {
-    "_note": "マイジャグラー系の標準値。未知機種のフォールバック用。設定4: REG≒1/273 合算≒1/132 / 設定5: REG≒1/243 合算≒1/122 / 設定6: REG≒1/218 合算≒1/109",
-    "min_games_blank": 1000,
-    "min_games_circle": 4000,
-    "min_games_double": 6000,
-    "reg_good":   273,
-    "reg_better": 243,
-    "reg_best":   218,
-    "comb_good":  132,
-    "comb_better": 122,
-    "comb_best":  109
-  },
-
-  "マイジャグラー": {
-    "_note": "RBの設定差が大きい機種。設定4: REG≒1/273 合算≒1/132 / 設定5: REG≒1/243 合算≒1/122 / 設定6: REG≒1/218 合算≒1/109",
-    "min_games_blank": 1000,
-    "min_games_circle": 4000,
-    "min_games_double": 6000,
-    "reg_good":   273,
-    "reg_better": 243,
-    "reg_best":   218,
-    "comb_good":  132,
-    "comb_better": 122,
-    "comb_best":  109
-  },
-
-  "ネオアイムジャグラー": {
-    "_note": "アイムジャグラー系。設定4: REG≒1/282 合算≒1/139 / 設定5: REG≒1/248 合算≒1/126 / 設定6: REG≒1/224 合算≒1/112",
-    "min_games_blank": 1000,
-    "min_games_circle": 4000,
-    "min_games_double": 6000,
-    "reg_good":   282,
-    "reg_better": 248,
-    "reg_best":   224,
-    "comb_good":  139,
-    "comb_better": 126,
-    "comb_best":  112
-  },
-
-  "ゴーゴージャグラー": {
-    "_note": "BB重視・RBが少ない機種。設定4: REG≒1/400 合算≒1/143 / 設定5: REG≒1/360 合算≒1/134 / 設定6: REG≒1/318 合算≒1/126。RB閾値を大きく緩め、合算で判断",
-    "min_games_blank": 1000,
-    "min_games_circle": 4000,
-    "min_games_double": 6000,
-    "reg_good":   400,
-    "reg_better": 360,
-    "reg_best":   318,
-    "comb_good":  143,
-    "comb_better": 134,
-    "comb_best":  126
-  },
-
-  "ミスタージャグラー": {
-    "_note": "クラシック系。設定4: REG≒1/290 合算≒1/140 / 設定5: REG≒1/255 合算≒1/127 / 設定6: REG≒1/230 合算≒1/115",
+    "_note": "マイジャグラー系の標準値。未知機種のフォールバック用。設定4: REG≒1/290 合算≒1/135 / 設定5: REG≒1/269 合算≒1/127 / 設定6: REG≒1/229 合算≒1/115",
     "min_games_blank": 1000,
     "min_games_circle": 4000,
     "min_games_double": 6000,
     "reg_good":   290,
-    "reg_better": 255,
-    "reg_best":   230,
-    "comb_good":  140,
+    "reg_better": 269,
+    "reg_best":   229,
+    "comb_good":  135,
     "comb_better": 127,
     "comb_best":  115
   },
 
-  "ファンキージャグラー": {
-    "_note": "BB重視・RBが少ない機種。設定4: REG≒1/410 合算≒1/148 / 設定5: REG≒1/370 合算≒1/138 / 設定6: REG≒1/335 合算≒1/130。ゴーゴー系と同様にRB閾値を大幅緩和",
+  "マイジャグラー": {
+    "_note": "設定4: REG≒1/290.0 合算≒1/135.4 / 設定5: REG≒1/268.6 合算≒1/126.8 / 設定6: REG≒1/229.1 合算≒1/114.6",
     "min_games_blank": 1000,
     "min_games_circle": 4000,
     "min_games_double": 6000,
-    "reg_good":   410,
-    "reg_better": 370,
-    "reg_best":   335,
-    "comb_good":  148,
-    "comb_better": 138,
-    "comb_best":  130
+    "reg_good":   290,
+    "reg_better": 269,
+    "reg_best":   229,
+    "comb_good":  135,
+    "comb_better": 127,
+    "comb_best":  115
+  },
+
+  "ネオアイムジャグラー": {
+    "_note": "設定4: REG≒1/315.1 合算≒1/142.2 / 設定5: REG≒1/255.0 合算≒1/128.5 / 設定6: REG≒1/255.0 合算≒1/127.5",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good":   315,
+    "reg_better": 255,
+    "reg_best":   255,
+    "comb_good":  142,
+    "comb_better": 129,
+    "comb_best":  128
+  },
+
+  "ゴーゴージャグラー": {
+    "_note": "設定4: REG≒1/268.5 合算≒1/130.5 / 設定5: REG≒1/247.3 合算≒1/123.7 / 設定6: REG≒1/234.9 合算≒1/117.4",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good":   269,
+    "reg_better": 247,
+    "reg_best":   235,
+    "comb_good":  131,
+    "comb_better": 124,
+    "comb_best":  117
+  },
+
+  "ミスタージャグラー": {
+    "_note": "設定4: REG≒1/291.3 合算≒1/134.3 / 設定5: REG≒1/257.0 合算≒1/124.4 / 設定6: REG≒1/237.4 合算≒1/118.7",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good":   291,
+    "reg_better": 257,
+    "reg_best":   237,
+    "comb_good":  134,
+    "comb_better": 124,
+    "comb_best":  119
+  },
+
+  "ファンキージャグラー": {
+    "_note": "設定4: REG≒1/322.8 合算≒1/140.6 / 設定5: REG≒1/299.3 合算≒1/133.2 / 設定6: REG≒1/262.1 合算≒1/119.6",
+    "min_games_blank": 1000,
+    "min_games_circle": 4000,
+    "min_games_double": 6000,
+    "reg_good":   323,
+    "reg_better": 299,
+    "reg_best":   262,
+    "comb_good":  141,
+    "comb_better": 133,
+    "comb_best":  120
   },
 
   "ウルトラミラクルジャグラー": {
-    "_note": "RBが多めの機種。設定4: REG≒1/280 合算≒1/137 / 設定5: REG≒1/245 合算≒1/124 / 設定6: REG≒1/220 合算≒1/110",
+    "_note": "設定4: REG≒1/322.8 合算≒1/138.6 / 設定5: REG≒1/297.9 合算≒1/130.8 / 設定6: REG≒1/277.7 合算≒1/121.6",
     "min_games_blank": 1000,
     "min_games_circle": 4000,
     "min_games_double": 6000,
-    "reg_good":   280,
-    "reg_better": 245,
-    "reg_best":   220,
-    "comb_good":  137,
-    "comb_better": 124,
-    "comb_best":  110
+    "reg_good":   323,
+    "reg_better": 298,
+    "reg_best":   278,
+    "comb_good":  139,
+    "comb_better": 131,
+    "comb_best":  122
   },
 
   "ジャグラーガールズ": {
-    "_note": "RBが多い機種。設定4: REG≒1/260 合算≒1/135 / 設定5: REG≒1/225 合算≒1/120 / 設定6: REG≒1/199 合算≒1/107。RB閾値を他機種より厳しく設定",
+    "_note": "設定4: REG≒1/281.3 合算≒1/132.4 / 設定5: REG≒1/270.8 合算≒1/128.3 / 設定6: REG≒1/252.1 合算≒1/119.2",
     "min_games_blank": 1000,
     "min_games_circle": 4000,
     "min_games_double": 6000,
-    "reg_good":   260,
-    "reg_better": 225,
-    "reg_best":   205,
-    "comb_good":  135,
-    "comb_better": 120,
-    "comb_best":  110
+    "reg_good":   281,
+    "reg_better": 271,
+    "reg_best":   252,
+    "comb_good":  132,
+    "comb_better": 128,
+    "comb_best":  119
   },
 
   "ハッピージャグラー": {
-    "_note": "RBが多い機種。設定4: REG≒1/265 合算≒1/136 / 設定5: REG≒1/230 合算≒1/123 / 設定6: REG≒1/200 合算≒1/111。ジャグガールズに近い特性",
+    "_note": "設定4: REG≒1/300.6 合算≒1/137.7 / 設定5: REG≒1/273.1 合算≒1/127.5 / 設定6: REG≒1/256.0 合算≒1/120.0",
     "min_games_blank": 1000,
     "min_games_circle": 4000,
     "min_games_double": 6000,
-    "reg_good":   265,
-    "reg_better": 230,
-    "reg_best":   210,
-    "comb_good":  136,
-    "comb_better": 123,
-    "comb_best":  113
+    "reg_good":   301,
+    "reg_better": 273,
+    "reg_best":   256,
+    "comb_good":  138,
+    "comb_better": 128,
+    "comb_best":  120
   }
 }

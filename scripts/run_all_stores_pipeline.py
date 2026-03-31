@@ -159,6 +159,15 @@ def scrape_and_judge(store_name: str, rules: dict,
     unit_count = sum(len(m.get("slot_data", [])) for m in jugler_results)
     print(f"  取得完了: {machine_count} 機種 / {unit_count} 台")
 
+    # ── 全機種で台数 0 の場合は空データとして失敗扱いにする ──
+    if unit_count == 0:
+        print(
+            f"  [ERROR] 全機種で台数が 0 件です。"
+            f"日付タブ切替後のデータ読み込みに失敗している可能性があります。"
+            f"保存をスキップして失敗扱いにします。"
+        )
+        return None
+
     print(f"  【フェーズ2】高設定判定中 ...")
     judged = attach_judges(jugler_results, rules)
     print(f"  判定完了")
@@ -346,6 +355,8 @@ def print_all_summary(results: list[dict]):
     for r in results:
         if r.get("skipped"):
             status = "スキップ"
+        elif r["success"] and r.get("unit_count", 0) == 0:
+            status = "WARNING"
         elif r["success"]:
             status = "OK"
         else:

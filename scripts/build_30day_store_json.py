@@ -51,6 +51,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 PROCESSED_DIR = BASE_DIR / "data" / "processed"
 DOCS_DATA_DIR = BASE_DIR / "docs" / "data"
+STORES_CONFIG = BASE_DIR / "config" / "stores.json"
 
 # ファイル名パターン: YYYYMMDD_店舗名_judged.json
 JUDGED_FILE_PATTERN = re.compile(r"^(\d{8})_.+_judged\.json$")
@@ -296,6 +297,17 @@ def main():
 
     # 読み込み・グループ化
     store_data = load_and_group(judged_files, days=args.days)
+
+    # config/stores.json で enabled: false の店舗を除外
+    if STORES_CONFIG.exists():
+        with open(STORES_CONFIG, encoding="utf-8") as f:
+            stores_cfg = json.load(f)
+        enabled_names = {s["store_name"] for s in stores_cfg if s.get("enabled", True)}
+        before = len(store_data)
+        store_data = {k: v for k, v in store_data.items() if k in enabled_names}
+        excluded = before - len(store_data)
+        if excluded:
+            print(f"[INFO] enabled:false の店舗を {excluded} 件除外しました")
 
     # --store 指定時は絞り込み
     if args.store:

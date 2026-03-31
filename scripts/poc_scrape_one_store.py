@@ -619,8 +619,32 @@ def click_date_tab(
                 try:
                     tab["locator"].click()
                     page.wait_for_load_state("domcontentloaded")
+                    # サイトがAJAXでデータを差し替える場合、domcontentloaded だけでは
+                    # データが反映される前に読み取ってしまう。networkidle まで待つ。
+                    try:
+                        page.wait_for_load_state("networkidle", timeout=10000)
+                    except Exception:
+                        pass
+                    # テーブルのデータ行（2行目以降）が現れるまで最大10秒待つ。
+                    # テーブル要素の存在だけでは不十分 — AJAXで空テーブルが先に表示され
+                    # データ行は後から挿入されるため、データ行まで確認する。
+                    try:
+                        page.wait_for_selector("table tr:nth-child(2) td", timeout=10000)
+                    except Exception:
+                        pass
+                    # AJAX描画の最終仕上げを待つ固定バッファ（2秒）
+                    page.wait_for_timeout(2000)
                     dismiss_overlays(page)
                     print(f"    [INFO] 日付タブ「{tab['label']}」({target_date}) をクリックしました")
+                    # スクリーンショットを必ず保存（空データ原因調査用）
+                    try:
+                        import re as _re2
+                        ss_name = _re2.sub(r"[^\w]", "_", f"date_tab_clicked_{target_date}_{int(time.time())}")
+                        ss_path = f"{screenshot_dir}/{ss_name}.png"
+                        page.screenshot(path=ss_path)
+                        print(f"    [INFO] 日付タブクリック後SS: {ss_path}")
+                    except Exception:
+                        pass
                     return True
                 except Exception as e:
                     print(f"    [WARN] 日付タブクリック失敗: {e}")
@@ -662,6 +686,134 @@ def click_date_tab(
     except Exception:
         pass
     return False
+
+
+# ---------------------------------------------------------------------------
+# 機種名検証
+# ---------------------------------------------------------------------------
+
+def verify_machine_name_on_page(page: Page, expected_name: str) -> tuple[bool, str]:
+    """
+    現在ページに表示されている機種名を確認し、expected_name と一致するか検証する。
+
+    日付タブクリック後などに「意図した機種の画面を見ているか」を確認するために使う。
+    ページ上の見出し・タイトル・本文テキストを順に探して照合する。
+
+    【比較は正規化後の機種名で行う】
+    機種一覧画面では「マイジャグラーV [46]」のように台数付きで表示されるが、
+    大当り一覧画面では「マイジャグラーV」のように機種名のみ表示される。
+    そのため、比較前に [数字] 形式の台数表記を除去して正規化してから比較する。
+
+    Returns:
+        (is_match, found_name)
+        - is_match  : True なら一致（想定通り）、False なら不一致
+        - found_name: ページから見つかった機種名候補（見つからなければ空文字）
+    """
+    import re as _re
+
+    def _normalize(name: str) -> str:
+        """機種名から台数表記（例: [46]）を除去して正規化する"""
+        return _re.sub(r'\s*\[\d+\]\s*', '', name).strip()
+
+    norm_expected = _normalize(expected_name)
+
+    # 見出し系セレクタで機種名を探す（優先度順）
+    # kishu / machine / model 系クラスを h タグより優先することで、
+    # ページタイトル全体ではなく画面上の機種名ラベルを先に取得できる
+    heading_selectors = [
+        "[class*='kishu']",
+        "[class*='machine']",
+        "[class*='model']",
+        "h1", "h2", "h3", "h4",
+        "[class*='title']",
+    ]
+
+    found_texts: list[str] = []
+
+    # ページタイトル（<title>）はフォールバック用として末尾に追加
+    page_title: str = ""
+    try:
+        page_title = page.title()
+    except Exception:
+        pass
+
+    for sel in heading_selectors:
+        try:
+            for elem in page.locator(sel).all():
+                try:
+                    text = elem.inner_text(timeout=300).strip()
+                    if text and len(text) >= 2:
+                        found_texts.append(text)
+                except Exception:
+                    continue
+        except Exception:
+            continue
+
+    if page_title and len(page_title) >= 2:
+        found_texts.append(page_title)
+
+    # 正規化後の機種名同士で比較する
+    for text in found_texts:
+        norm_text = _normalize(text)
+        if norm_expected in norm_text or norm_text in norm_expected:
+            return True, text
+
+    # フォールバック: ページ本文全体から正規化済み機種名を検索
+    try:
+        body_text = page.locator("body").inner_text(timeout=1000)
+        if norm_expected in body_text:
+            return True, expected_name
+    except Exception:
+        pass
+
+    best_candidate = found_texts[0] if found_texts else ""
+    return False, best_candidate
+
+
+# ---------------------------------------------------------------------------
+# データ取得直前スクリーンショット
+# ---------------------------------------------------------------------------
+
+def take_pre_extract_screenshot(
+    page: Page,
+    store_name: str,
+    machine_name: str,
+    target_date: str,
+    screenshot_dir: str = "data/raw",
+) -> str:
+    """
+    データ取得直前のスクリーンショットを保存する。
+
+    店舗名・機種名・日付をファイル名に含めることで、
+    「いつ・どの店舗・どの機種」の画面を見ていたか後から確認できる。
+
+    ファイル名: pre_extract_{date}_{store}_{machine}_{timestamp}.png
+
+    Returns:
+        保存したパス（失敗時は空文字）
+    """
+    import re as _re
+
+    def _sanitize(s: str) -> str:
+        return _re.sub(r"[^\w\-]", "_", s)[:20]
+
+    ts = int(time.time())
+    filename = (
+        f"pre_extract_{target_date}"
+        f"_{_sanitize(store_name)}"
+        f"_{_sanitize(machine_name)}"
+        f"_{ts}.png"
+    )
+    path = f"{screenshot_dir}/{filename}"
+
+    try:
+        os.makedirs(screenshot_dir, exist_ok=True)
+        page.screenshot(path=path)
+        print(f"    [SS] スクリーンショット保存: {path}")
+        return path
+    except Exception as e:
+        print(f"    [WARN] スクリーンショット保存失敗: {e}")
+        return ""
 
 
 def run():

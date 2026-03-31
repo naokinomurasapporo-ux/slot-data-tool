@@ -58,9 +58,9 @@ def scrape(store_name: str, target_date: str | None = None) -> list[dict]:
 
     Args:
         store_name  : 取得対象の店舗名
-        target_date : "YYYYMMDD" 形式の日付。指定した場合、大当り一覧の
-                      日付タブをクリックしてその日のデータを取得する。
-                      None または今日の日付の場合はタブ操作なし（デフォルト表示）。
+        target_date : "YYYYMMDD" 形式の日付。大当り一覧の日付タブを確認してから
+                      その日のデータを取得する。None の場合は今日の日付を使用。
+                      日付タブが存在しない（サイト未更新）場合は取得を中断する。
 
     Returns:
         [{"index": ..., "name": "機種名", "href": "...", "slot_data": [...]}, ...]
@@ -68,8 +68,10 @@ def scrape(store_name: str, target_date: str | None = None) -> list[dict]:
     """
     session_path = BASE_DIR / SESSION_PATH
     today_str = date.today().strftime("%Y%m%d")
-    need_date_tab = bool(target_date) and target_date != today_str
-    display_date = target_date if need_date_tab else today_str
+    if not target_date:
+        target_date = today_str
+    need_date_tab = True  # 今日分でも必ず日付タブを確認・クリックする
+    display_date = target_date
     screenshot_dir = str(BASE_DIR / "data" / "raw")
 
     if need_date_tab:
@@ -171,13 +173,20 @@ def scrape(store_name: str, target_date: str | None = None) -> list[dict]:
                     results.append({**machine, "slot_data": [], "error": "大当り一覧ボタンが見つからなかった"})
                     continue
 
-                # 日付タブの選択（バックフィル時のみ）
+                # 日付タブの確認・クリック（サイト未更新の場合は中断）
                 if need_date_tab:
                     if not click_date_tab(page, target_date, screenshot_dir=screenshot_dir):
+                        is_today = target_date == today_str
+                        reason = (
+                            f"日付タブ {target_date} が見つかりません（サイトにまだ今日のデータが掲載されていない可能性があります）"
+                            if is_today
+                            else f"日付タブ {target_date} が見つかりませんでした"
+                        )
+                        print(f"    [ERROR] {reason}")
                         results.append({
                             **machine,
                             "slot_data": [],
-                            "error": f"日付タブ {target_date} が見つかりませんでした",
+                            "error": reason,
                         })
                         continue
 
