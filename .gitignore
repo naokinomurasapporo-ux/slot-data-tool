@@ -9,6 +9,10 @@ config/storage_state.json
 data/raw/
 # 日次の判定JSONと集計済みJSON（ローカル処理用）
 data/processed/
+# データバックアップ（ローカル専用）
+data/backup_*/
+# ルール設定バックアップ（ローカル専用）
+config/backups/
 
 # ===== GitHub Pages 用データ（git管理対象）=====
 # docs/data/ は管理対象 → 除外しない

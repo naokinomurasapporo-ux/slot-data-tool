@@ -1,0 +1,31 @@
+[
+  {
+    "store_name": "エスパス日拓新宿歌舞伎町店",
+    "date": "20260401",
+    "tags": [
+      "is_tokuteibi",
+      "is_juggler_boost_day"
+    ],
+    "narabi_size": 0,
+    "memo": "4の日イベント（サンプルデータ）"
+  },
+  {
+    "store_name": "本八幡ＵＮＯ",
+    "date": "20260404",
+    "tags": [
+      "is_zorome_day",
+      "has_narabi_koyaku"
+    ],
+    "narabi_size": 6,
+    "memo": "ゾロ目日・並び6台公約（サンプルデータ）"
+  },
+  {
+    "store_name": "スーパーＤ’ステーション錦糸町店",
+    "date": "20260327",
+    "tags": [
+      "has_suffix_koyaku"
+    ],
+    "narabi_size": 6,
+    "memo": ""
+  }
+]

@@ -432,6 +432,327 @@
     .publish-badge.unknown     { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
     #last-action-info          { color: #9ca3af; }
 
+    /* ── 公約カレンダータブ ── */
+    .events-guide {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      font-size: 0.84rem;
+      color: #1e40af;
+      line-height: 1.7;
+    }
+    .events-guide strong { font-weight: 700; }
+
+    .events-add-box {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .events-add-box h3 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 14px;
+    }
+    .events-form-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px 14px;
+      align-items: start;
+      max-width: 640px;
+      margin-bottom: 14px;
+    }
+    .events-form-label {
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: #4b5563;
+      padding-top: 7px;
+      white-space: nowrap;
+    }
+    .events-form-input {
+      padding: 6px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #374151;
+      width: 100%;
+    }
+    .events-form-input:focus { outline: none; border-color: #3b82f6; background: #eff6ff; }
+    select.events-form-input { background: #fff; }
+
+    .events-tags-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 4px;
+    }
+    .tag-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.82rem;
+      color: #374151;
+      cursor: pointer;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 4px 10px;
+      transition: background 0.12s, border-color 0.12s;
+      user-select: none;
+    }
+    .tag-checkbox-label:hover { background: #eff6ff; border-color: #bfdbfe; }
+    .tag-checkbox-label input[type=checkbox] { accent-color: #2563eb; }
+    .tag-checkbox-label.checked { background: #dbeafe; border-color: #3b82f6; color: #1e40af; font-weight: 600; }
+
+    #narabi-row { display: none; }
+
+    .events-add-btn {
+      padding: 8px 22px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .events-add-btn:hover:not(:disabled) { opacity: 0.85; }
+    .events-add-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    #events-form-msg, #rr-form-msg {
+      font-size: 0.83rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      display: none;
+      margin-top: 10px;
+    }
+    #events-form-msg.ok,    #rr-form-msg.ok    { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+    #events-form-msg.error, #rr-form-msg.error { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* 公約一覧テーブル */
+    .events-list-box {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 18px 20px;
+    }
+    .events-list-box h3 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 14px;
+    }
+    .events-table-wrap { overflow-x: auto; }
+    .events-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.83rem;
+    }
+    .events-table th {
+      background: #1e293b;
+      color: #cbd5e1;
+      font-weight: 600;
+      padding: 8px 12px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .events-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    .events-table tr:last-child td { border-bottom: none; }
+    .events-table tr:hover td { background: #f8fafc; }
+    #events-empty {
+      font-size: 0.83rem;
+      color: #9ca3af;
+      padding: 16px 0;
+    }
+
+    /* タグバッジ */
+    .tag-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin: 1px 2px;
+      background: #dbeafe;
+      color: #1e40af;
+      white-space: nowrap;
+    }
+    .tag-badge.tag-strong  { background: #fce7f3; color: #9d174d; }
+    .tag-badge.tag-medium  { background: #d1fae5; color: #065f46; }
+    .tag-badge.tag-narabi  { background: #fef3c7; color: #92400e; }
+
+    /* 単発/繰り返し セグメントコントロール */
+    .events-segment {
+      display: inline-flex;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .events-segment-btn {
+      padding: 7px 22px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: none;
+      background: #f8fafc;
+      color: #6b7280;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .events-segment-btn + .events-segment-btn {
+      border-left: 1px solid #d1d5db;
+    }
+    .events-segment-btn.active {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    /* 繰り返しルールフォーム */
+    .recurrence-type-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 4px;
+    }
+    .recurrence-type-btn {
+      padding: 5px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #4b5563;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .recurrence-type-btn.active {
+      background: #dbeafe;
+      border-color: #3b82f6;
+      color: #1e40af;
+    }
+
+    .recurrence-params {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 4px;
+      align-items: center;
+    }
+    .recurrence-params label {
+      font-size: 0.82rem;
+      color: #4b5563;
+    }
+    .recurrence-params select,
+    .recurrence-params input[type=number] {
+      padding: 5px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.83rem;
+      background: #fff;
+    }
+    .recurrence-params input[type=number] {
+      width: 70px;
+    }
+
+    /* 月内の曜日チェックボックス（月日選択） */
+    .day-checkbox-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding-top: 4px;
+    }
+    .day-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.82rem;
+      color: #374151;
+      cursor: pointer;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 3px 9px;
+      user-select: none;
+    }
+    .day-checkbox-label:hover { background: #eff6ff; border-color: #bfdbfe; }
+    .day-checkbox-label input[type=checkbox] { accent-color: #2563eb; }
+    .day-checkbox-label.checked { background: #dbeafe; border-color: #3b82f6; color: #1e40af; font-weight: 600; }
+
+    /* 繰り返しルール一覧テーブル */
+    .recurring-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.83rem;
+    }
+    .recurring-table th {
+      background: #1e293b;
+      color: #cbd5e1;
+      font-weight: 600;
+      padding: 8px 12px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .recurring-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    .recurring-table tr:last-child td { border-bottom: none; }
+    .recurring-table tr:hover td { background: #f8fafc; }
+
+    .toggle-btn {
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.12s;
+      white-space: nowrap;
+    }
+    .toggle-btn.active {
+      background: #d1fae5;
+      border: 1px solid #6ee7b7;
+      color: #065f46;
+    }
+    .toggle-btn.inactive {
+      background: #f1f5f9;
+      border: 1px solid #d1d5db;
+      color: #6b7280;
+    }
+
+    .recur-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #e0e7ff;
+      color: #3730a3;
+      white-space: nowrap;
+    }
+
+    .event-delete-btn {
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: none;
+      border: 1px solid #fca5a5;
+      color: #ef4444;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .event-delete-btn:hover { background: #fef2f2; }
+
     /* バリデーションエラーパネル */
     #validation-errors {
       display: none;
@@ -464,6 +785,7 @@
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('ops')">⚙ 操作</button>
     <button class="tab-btn" onclick="switchTab('rules')">📋 判定基準</button>
+    <button class="tab-btn" onclick="switchTab('events')">📅 公約カレンダー</button>
   </div>
 
   <!-- ══════════════════════════════
@@ -584,13 +906,172 @@
   </div><!-- /tab-rules -->
 
 
+  <!-- ══════════════════════════════
+       公約カレンダータブ
+  ══════════════════════════════ -->
+  <div id="tab-events" class="tab-panel">
+
+    <!-- 使い方ガイド -->
+    <div class="events-guide">
+      <strong>📖 使い方</strong><br>
+      ここでは「特定日にどの店舗でどんなイベントがあるか」を登録します。<br>
+      登録した情報は将来の「予測スコア計算」に使われます。<br>
+      <strong>単発</strong>：特定の日付1回だけ登録　/　<strong>繰り返し</strong>：毎月/毎週など定期的なルールを登録<br>
+      ゾロ目日（4/4、7/7など）は自動判定されるため、手動登録は不要です。
+    </div>
+
+    <!-- セグメントコントロール -->
+    <div class="events-segment">
+      <button class="events-segment-btn active" id="seg-single" onclick="switchEventsMode('single')">単発</button>
+      <button class="events-segment-btn" id="seg-recurring" onclick="switchEventsMode('recurring')">繰り返し</button>
+    </div>
+
+    <!-- ────────────────────────────────────
+         単発モード
+    ──────────────────────────────────── -->
+    <div id="events-single-panel">
+
+      <!-- 新規追加フォーム -->
+      <div class="events-add-box">
+        <h3>➕ 単発公約を追加</h3>
+
+        <div class="events-form-grid">
+          <span class="events-form-label">日付</span>
+          <input type="date" id="ev-date" class="events-form-input" style="max-width:180px;">
+
+          <span class="events-form-label">店舗名</span>
+          <select id="ev-store" class="events-form-input" style="max-width:320px;">
+            <option value="">読み込み中...</option>
+          </select>
+
+          <span class="events-form-label">タグ</span>
+          <div class="events-tags-grid" id="ev-tags-grid">
+            <!-- JSで動的生成 -->
+          </div>
+
+          <span class="events-form-label" id="narabi-row" style="display:none;">並び台数</span>
+          <div id="narabi-row-input" style="display:none;">
+            <input type="number" id="ev-narabi" class="events-form-input" min="1" max="100" value="6"
+                   style="max-width:90px;" placeholder="例: 6">
+            <span style="font-size:0.8rem;color:#6b7280;margin-left:6px;">台</span>
+          </div>
+
+          <span class="events-form-label">メモ</span>
+          <input type="text" id="ev-memo" class="events-form-input" maxlength="100"
+                 placeholder="例: 4の日イベント（任意）">
+        </div>
+
+        <button class="events-add-btn" onclick="addEvent()">追加</button>
+        <div id="events-form-msg"></div>
+      </div>
+
+      <!-- 登録済み公約一覧 -->
+      <div class="events-list-box">
+        <h3>📋 登録済み単発公約一覧</h3>
+        <p id="events-empty" style="display:none;">まだ公約が登録されていません</p>
+        <div class="events-table-wrap">
+          <table class="events-table" id="events-table" style="display:none;">
+            <thead>
+              <tr>
+                <th>日付</th>
+                <th>店舗名</th>
+                <th>タグ</th>
+                <th>並び台数</th>
+                <th>メモ</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="events-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /events-single-panel -->
+
+
+    <!-- ────────────────────────────────────
+         繰り返しモード
+    ──────────────────────────────────── -->
+    <div id="events-recurring-panel" style="display:none;">
+
+      <!-- 繰り返しルール追加フォーム -->
+      <div class="events-add-box">
+        <h3>➕ 繰り返しルールを追加</h3>
+
+        <div class="events-form-grid">
+          <span class="events-form-label">店舗名</span>
+          <select id="rr-store" class="events-form-input" style="max-width:320px;">
+            <option value="">店舗を選択してください</option>
+          </select>
+
+          <span class="events-form-label">繰り返し種別</span>
+          <div class="recurrence-type-row">
+            <button class="recurrence-type-btn active" data-type="monthly_day" onclick="selectRecurrenceType('monthly_day')">毎月○日</button>
+            <button class="recurrence-type-btn" data-type="weekly_day" onclick="selectRecurrenceType('weekly_day')">毎週○曜日</button>
+            <button class="recurrence-type-btn" data-type="monthly_nth_weekday" onclick="selectRecurrenceType('monthly_nth_weekday')">第N○曜日</button>
+            <button class="recurrence-type-btn" data-type="yearly" onclick="selectRecurrenceType('yearly')">毎年○月○日</button>
+          </div>
+
+          <span class="events-form-label">繰り返し設定</span>
+          <div id="rr-params">
+            <!-- JSで動的生成 -->
+          </div>
+
+          <span class="events-form-label">タグ</span>
+          <div class="events-tags-grid" id="rr-tags-grid">
+            <!-- JSで動的生成 -->
+          </div>
+
+          <span class="events-form-label" id="rr-narabi-label" style="display:none;">並び台数</span>
+          <div id="rr-narabi-input" style="display:none;">
+            <input type="number" id="rr-narabi" class="events-form-input" min="1" max="100" value="6"
+                   style="max-width:90px;" placeholder="例: 6">
+            <span style="font-size:0.8rem;color:#6b7280;margin-left:6px;">台</span>
+          </div>
+
+          <span class="events-form-label">メモ</span>
+          <input type="text" id="rr-memo" class="events-form-input" maxlength="100"
+                 placeholder="例: 毎月4・14・24日イベント（任意）">
+        </div>
+
+        <button class="events-add-btn" onclick="addRecurringRule()">追加</button>
+        <div id="rr-form-msg"></div>
+      </div>
+
+      <!-- 繰り返しルール一覧 -->
+      <div class="events-list-box">
+        <h3>📋 繰り返しルール一覧</h3>
+        <p id="rr-empty" style="display:none;">繰り返しルールはまだ登録されていません</p>
+        <div class="events-table-wrap">
+          <table class="recurring-table" id="rr-table" style="display:none;">
+            <thead>
+              <tr>
+                <th>状態</th>
+                <th>店舗名</th>
+                <th>繰り返しパターン</th>
+                <th>タグ</th>
+                <th>並び台数</th>
+                <th>メモ</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="rr-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /events-recurring-panel -->
+
+  </div><!-- /tab-events -->
+
+
   <script>
     // ════════════════════════════════════════════
     // タブ切り替え
     // ════════════════════════════════════════════
     function switchTab(name) {
+      const ids = ['ops', 'rules', 'events'];
       document.querySelectorAll('.tab-btn').forEach((b, i) => {
-        const ids = ['ops', 'rules'];
         b.classList.toggle('active', ids[i] === name);
       });
       document.querySelectorAll('.tab-panel').forEach(p => {
@@ -600,6 +1081,9 @@
         loadRules();
         loadBackups();
         initPostStatus();
+      }
+      if (name === 'events') {
+        initEventsTab();
       }
     }
 
@@ -1135,6 +1619,608 @@
       const d = String(today.getDate()).padStart(2, '0');
       document.getElementById('post-date').value = `${y}${m}${d}`;
     })();
+
+    // ════════════════════════════════════════════
+    // 公約カレンダータブ
+    // ════════════════════════════════════════════
+
+    // タグの表示名・色分け（key → {label, cls}）
+    const TAG_DEFS = {
+      is_tokuteibi:         { label: '特定日',           cls: 'tag-strong' },
+      is_old_event_day:     { label: '旧イベント日',     cls: 'tag-medium' },
+      is_syuzai_day:        { label: '取材日',           cls: 'tag-strong' },
+      is_raiten_day:        { label: '来店日',           cls: 'tag-medium' },
+      is_anniversary:       { label: '周年日',           cls: 'tag-strong' },
+      is_zorome_day:        { label: 'ゾロ目日',         cls: '' },
+      is_juggler_boost_day: { label: 'ジャグラー強化日', cls: 'tag-medium' },
+      has_suffix_koyaku:    { label: '末尾公約',         cls: 'tag-narabi' },
+      has_narabi_koyaku:    { label: '並び公約',         cls: 'tag-narabi' },
+    };
+
+    let eventsData = [];   // サーバーから取得した公約リスト
+
+    // ─── タブ初期化 ──────────────────────────────
+    async function initEventsTab() {
+      await Promise.all([loadStores(), loadEvents()]);
+      buildTagCheckboxes();
+      // 日付の初期値を明日に設定
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const y = tomorrow.getFullYear();
+      const m = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const d = String(tomorrow.getDate()).padStart(2, '0');
+      document.getElementById('ev-date').value = `${y}-${m}-${d}`;
+    }
+
+    // ─── 店舗リスト読み込み ───────────────────────
+    async function loadStores() {
+      const res = await fetch('/api/stores');
+      const stores = await res.json();
+      const sel = document.getElementById('ev-store');
+      sel.innerHTML = '<option value="">店舗を選択してください</option>';
+      for (const s of stores) {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        sel.appendChild(opt);
+      }
+    }
+
+    // ─── タグチェックボックス生成 ─────────────────
+    function buildTagCheckboxes() {
+      const grid = document.getElementById('ev-tags-grid');
+      if (grid.children.length > 0) return;  // 2回目以降はスキップ
+
+      for (const [key, def] of Object.entries(TAG_DEFS)) {
+        const lbl = document.createElement('label');
+        lbl.className = 'tag-checkbox-label';
+        lbl.dataset.tagKey = key;
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = key;
+        cb.id = `tag-${key}`;
+        cb.addEventListener('change', () => {
+          lbl.classList.toggle('checked', cb.checked);
+          // 並び公約チェック時に「並び台数」行を表示
+          const hasNarabi = document.getElementById('tag-has_narabi_koyaku')?.checked;
+          document.getElementById('narabi-row').style.display       = hasNarabi ? '' : 'none';
+          document.getElementById('narabi-row-input').style.display = hasNarabi ? '' : 'none';
+        });
+
+        lbl.appendChild(cb);
+        lbl.appendChild(document.createTextNode(' ' + def.label));
+        grid.appendChild(lbl);
+      }
+    }
+
+    // ─── 公約一覧読み込み ─────────────────────────
+    async function loadEvents() {
+      const res = await fetch('/api/events');
+      eventsData = await res.json();
+      renderEventsTable(eventsData);
+    }
+
+    // ─── 公約一覧描画 ─────────────────────────────
+    function renderEventsTable(events) {
+      const tbody  = document.getElementById('events-tbody');
+      const table  = document.getElementById('events-table');
+      const empty  = document.getElementById('events-empty');
+      tbody.innerHTML = '';
+
+      if (!events.length) {
+        table.style.display = 'none';
+        empty.style.display = '';
+        return;
+      }
+      table.style.display = '';
+      empty.style.display = 'none';
+
+      events.forEach((ev, idx) => {
+        const tr = document.createElement('tr');
+
+        // 日付（YYYYMMDD → YYYY/MM/DD）
+        const d = ev.date || '';
+        const dateStr = d.length === 8
+          ? `${d.slice(0,4)}/${d.slice(4,6)}/${d.slice(6,8)}`
+          : d;
+
+        // タグバッジ
+        const tagHtml = (ev.tags || []).map(t => {
+          const def = TAG_DEFS[t] || { label: t, cls: '' };
+          return `<span class="tag-badge ${def.cls}">${def.label}</span>`;
+        }).join('');
+
+        tr.innerHTML = `
+          <td style="white-space:nowrap;font-weight:600;">${dateStr}</td>
+          <td>${esc(ev.store_name || '')}</td>
+          <td>${tagHtml || '<span style="color:#9ca3af;">—</span>'}</td>
+          <td style="text-align:center;">${
+            ev.narabi_size > 0 ? `${ev.narabi_size} 台` : '—'
+          }</td>
+          <td style="color:#6b7280;">${esc(ev.memo || '')}</td>
+          <td>
+            <button class="event-delete-btn" onclick="deleteEvent(${idx})">削除</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ─── 公約追加 ─────────────────────────────────
+    async function addEvent() {
+      const dateRaw = document.getElementById('ev-date').value;      // YYYY-MM-DD
+      const store   = document.getElementById('ev-store').value.trim();
+      const memo    = document.getElementById('ev-memo').value.trim();
+      const narabi  = parseInt(document.getElementById('ev-narabi').value, 10) || 0;
+
+      // 日付を YYYYMMDD に変換
+      const date = dateRaw.replace(/-/g, '');
+
+      // 選択されたタグを収集
+      const tags = [];
+      document.querySelectorAll('#ev-tags-grid input[type=checkbox]:checked').forEach(cb => {
+        tags.push(cb.value);
+      });
+
+      const msgEl = document.getElementById('events-form-msg');
+
+      // 簡易バリデーション
+      if (!date || date.length !== 8) {
+        showEventsMsg('error', '日付を選択してください');
+        return;
+      }
+      if (!store) {
+        showEventsMsg('error', '店舗名を選択してください');
+        return;
+      }
+      if (tags.length === 0) {
+        showEventsMsg('error', 'タグを1つ以上選択してください');
+        return;
+      }
+
+      const payload = { store_name: store, date, tags, narabi_size: narabi, memo };
+
+      const btn = document.querySelector('.events-add-btn');
+      btn.disabled = true;
+      btn.textContent = '追加中...';
+
+      const res  = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      btn.disabled = false;
+      btn.textContent = '追加';
+
+      if (!res.ok) {
+        const detail = data.details ? `\n${data.details.join('\n')}` : '';
+        showEventsMsg('error', `${data.error}${detail}`);
+        return;
+      }
+
+      showEventsMsg('ok', `✅ 追加しました（${store} / ${date.slice(0,4)}/${date.slice(4,6)}/${date.slice(6,8)}）`);
+      resetEventsForm();
+      await loadEvents();
+    }
+
+    // ─── 公約削除 ─────────────────────────────────
+    async function deleteEvent(idx) {
+      const ev = eventsData[idx];
+      if (!ev) return;
+      const d = ev.date || '';
+      const dateStr = d.length === 8 ? `${d.slice(0,4)}/${d.slice(4,6)}/${d.slice(6,8)}` : d;
+      if (!confirm(`「${ev.store_name}（${dateStr}）」を削除しますか？`)) return;
+
+      const res  = await fetch(`/api/events/${idx}`, { method: 'DELETE' });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(`削除に失敗しました: ${data.error}`);
+        return;
+      }
+      await loadEvents();
+    }
+
+    // ─── フォームリセット ─────────────────────────
+    function resetEventsForm() {
+      document.getElementById('ev-store').value = '';
+      document.getElementById('ev-memo').value  = '';
+      document.getElementById('ev-narabi').value = '6';
+      document.querySelectorAll('#ev-tags-grid input[type=checkbox]').forEach(cb => {
+        cb.checked = false;
+        cb.closest('label').classList.remove('checked');
+      });
+      document.getElementById('narabi-row').style.display       = 'none';
+      document.getElementById('narabi-row-input').style.display = 'none';
+    }
+
+    // ─── メッセージ表示 ───────────────────────────
+    function showEventsMsg(type, text) {
+      const el = document.getElementById('events-form-msg');
+      el.className = type;
+      el.textContent = text;
+      el.style.display = 'block';
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.style.display = 'none', 8000);
+    }
+
+    // ─── HTML エスケープ ──────────────────────────
+    function esc(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ════════════════════════════════════════════
+    // 単発 / 繰り返し モード切り替え
+    // ════════════════════════════════════════════
+
+    function switchEventsMode(mode) {
+      document.getElementById('seg-single').classList.toggle('active',    mode === 'single');
+      document.getElementById('seg-recurring').classList.toggle('active', mode === 'recurring');
+      document.getElementById('events-single-panel').style.display    = mode === 'single'    ? '' : 'none';
+      document.getElementById('events-recurring-panel').style.display = mode === 'recurring' ? '' : 'none';
+      if (mode === 'recurring') {
+        loadRecurringRules();
+        buildRrTagCheckboxes();
+        buildRrStoreSelect();
+        if (!rrCurrentType) selectRecurrenceType('monthly_day');
+      }
+    }
+
+    // ════════════════════════════════════════════
+    // 繰り返しルール タブ
+    // ════════════════════════════════════════════
+
+    let rrCurrentType = '';  // 選択中の繰り返し種別
+    let rrRulesData   = [];  // サーバーから取得したルール一覧
+
+    const WEEKDAY_LABELS = ['月', '火', '水', '木', '金', '土', '日'];
+    const NTH_LABELS     = ['第1', '第2', '第3', '第4', '第5'];
+
+    // ─── 店舗プルダウン（繰り返し用） ────────────
+    async function buildRrStoreSelect() {
+      const sel = document.getElementById('rr-store');
+      if (sel.options.length > 1) return;  // 既にロード済み
+      const res = await fetch('/api/stores');
+      const stores = await res.json();
+      sel.innerHTML = '<option value="">店舗を選択してください</option>';
+      for (const s of stores) {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        sel.appendChild(opt);
+      }
+    }
+
+    // ─── タグチェックボックス（繰り返し用） ──────
+    function buildRrTagCheckboxes() {
+      const grid = document.getElementById('rr-tags-grid');
+      if (grid.children.length > 0) return;
+      for (const [key, def] of Object.entries(TAG_DEFS)) {
+        const lbl = document.createElement('label');
+        lbl.className = 'tag-checkbox-label';
+        lbl.dataset.tagKey = key;
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = key;
+        cb.id = `rr-tag-${key}`;
+        cb.addEventListener('change', () => {
+          lbl.classList.toggle('checked', cb.checked);
+          const hasNarabi = document.getElementById('rr-tag-has_narabi_koyaku')?.checked;
+          document.getElementById('rr-narabi-label').style.display = hasNarabi ? '' : 'none';
+          document.getElementById('rr-narabi-input').style.display = hasNarabi ? '' : 'none';
+        });
+
+        lbl.appendChild(cb);
+        lbl.appendChild(document.createTextNode(' ' + def.label));
+        grid.appendChild(lbl);
+      }
+    }
+
+    // ─── 繰り返し種別ボタン切り替え ──────────────
+    function selectRecurrenceType(type) {
+      rrCurrentType = type;
+      document.querySelectorAll('.recurrence-type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+      });
+      renderRrParams(type);
+    }
+
+    // ─── 繰り返しパラメータ入力エリア描画 ─────────
+    function renderRrParams(type) {
+      const container = document.getElementById('rr-params');
+      container.innerHTML = '';
+
+      if (type === 'monthly_day') {
+        // 1〜31 のチェックボックス
+        const wrap = document.createElement('div');
+        wrap.className = 'day-checkbox-wrap';
+        for (let d = 1; d <= 31; d++) {
+          const lbl = document.createElement('label');
+          lbl.className = 'day-checkbox-label';
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.value = d;
+          cb.className = 'rr-day-cb';
+          cb.addEventListener('change', () => lbl.classList.toggle('checked', cb.checked));
+          lbl.appendChild(cb);
+          lbl.appendChild(document.createTextNode(` ${d}日`));
+          wrap.appendChild(lbl);
+        }
+        container.appendChild(wrap);
+
+      } else if (type === 'weekly_day') {
+        const row = document.createElement('div');
+        row.className = 'recurrence-params';
+        const lbl = document.createElement('label');
+        lbl.textContent = '曜日: ';
+        const sel = document.createElement('select');
+        sel.id = 'rr-weekday';
+        WEEKDAY_LABELS.forEach((w, i) => {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = `${w}曜日`;
+          sel.appendChild(opt);
+        });
+        row.appendChild(lbl);
+        row.appendChild(sel);
+        container.appendChild(row);
+
+      } else if (type === 'monthly_nth_weekday') {
+        const row = document.createElement('div');
+        row.className = 'recurrence-params';
+
+        const lblN = document.createElement('label');
+        lblN.textContent = '第: ';
+        const selN = document.createElement('select');
+        selN.id = 'rr-nth';
+        NTH_LABELS.forEach((n, i) => {
+          const opt = document.createElement('option');
+          opt.value = i + 1;
+          opt.textContent = n;
+          selN.appendChild(opt);
+        });
+
+        const lblW = document.createElement('label');
+        lblW.style.marginLeft = '12px';
+        lblW.textContent = '曜日: ';
+        const selW = document.createElement('select');
+        selW.id = 'rr-nth-weekday';
+        WEEKDAY_LABELS.forEach((w, i) => {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = `${w}曜日`;
+          selW.appendChild(opt);
+        });
+
+        row.appendChild(lblN);
+        row.appendChild(selN);
+        row.appendChild(lblW);
+        row.appendChild(selW);
+        container.appendChild(row);
+
+      } else if (type === 'yearly') {
+        const row = document.createElement('div');
+        row.className = 'recurrence-params';
+
+        const lblM = document.createElement('label');
+        lblM.textContent = '月: ';
+        const selM = document.createElement('select');
+        selM.id = 'rr-month';
+        for (let m = 1; m <= 12; m++) {
+          const opt = document.createElement('option');
+          opt.value = m;
+          opt.textContent = `${m}月`;
+          selM.appendChild(opt);
+        }
+
+        const lblD = document.createElement('label');
+        lblD.style.marginLeft = '12px';
+        lblD.textContent = '日: ';
+        const selD = document.createElement('select');
+        selD.id = 'rr-yearly-day';
+        for (let d = 1; d <= 31; d++) {
+          const opt = document.createElement('option');
+          opt.value = d;
+          opt.textContent = `${d}日`;
+          selD.appendChild(opt);
+        }
+
+        row.appendChild(lblM);
+        row.appendChild(selM);
+        row.appendChild(lblD);
+        row.appendChild(selD);
+        container.appendChild(row);
+      }
+    }
+
+    // ─── recurrence オブジェクトを収集 ────────────
+    function collectRecurrence() {
+      const type = rrCurrentType;
+      if (type === 'monthly_day') {
+        const days = [];
+        document.querySelectorAll('.rr-day-cb:checked').forEach(cb => days.push(parseInt(cb.value)));
+        return days.length ? { type, days } : null;
+      } else if (type === 'weekly_day') {
+        const weekday = parseInt(document.getElementById('rr-weekday')?.value ?? -1);
+        return { type, weekday };
+      } else if (type === 'monthly_nth_weekday') {
+        const n = parseInt(document.getElementById('rr-nth')?.value ?? 1);
+        const weekday = parseInt(document.getElementById('rr-nth-weekday')?.value ?? 0);
+        return { type, n, weekday };
+      } else if (type === 'yearly') {
+        const month = parseInt(document.getElementById('rr-month')?.value ?? 1);
+        const day   = parseInt(document.getElementById('rr-yearly-day')?.value ?? 1);
+        return { type, month, day };
+      }
+      return null;
+    }
+
+    // ─── 繰り返しルール追加 ──────────────────────
+    async function addRecurringRule() {
+      const store = document.getElementById('rr-store').value.trim();
+      const memo  = document.getElementById('rr-memo').value.trim();
+      const narabi = parseInt(document.getElementById('rr-narabi').value, 10) || 0;
+
+      const tags = [];
+      document.querySelectorAll('#rr-tags-grid input[type=checkbox]:checked').forEach(cb => {
+        tags.push(cb.value);
+      });
+
+      const recurrence = collectRecurrence();
+
+      // フロント簡易バリデーション
+      if (!store) { showRrMsg('error', '店舗名を選択してください'); return; }
+      if (!recurrence) { showRrMsg('error', '繰り返し日を1つ以上選択してください'); return; }
+      if (tags.length === 0) { showRrMsg('error', 'タグを1つ以上選択してください'); return; }
+
+      const payload = { store_name: store, recurrence, tags, narabi_size: narabi, memo };
+
+      const btn = document.querySelector('#events-recurring-panel .events-add-btn');
+      btn.disabled = true;
+      btn.textContent = '追加中...';
+
+      const res  = await fetch('/api/recurring_rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      btn.disabled = false;
+      btn.textContent = '追加';
+
+      if (!res.ok) {
+        const detail = data.details ? `\n${data.details.join('\n')}` : '';
+        showRrMsg('error', `${data.error}${detail}`);
+        return;
+      }
+
+      showRrMsg('ok', `✅ 追加しました（${store}）`);
+      resetRrForm();
+      await loadRecurringRules();
+    }
+
+    // ─── 繰り返しルール一覧読み込み ──────────────
+    async function loadRecurringRules() {
+      const res = await fetch('/api/recurring_rules');
+      rrRulesData = await res.json();
+      renderRrTable(rrRulesData);
+    }
+
+    // ─── 繰り返しルール一覧描画 ───────────────────
+    function renderRrTable(rules) {
+      const tbody = document.getElementById('rr-tbody');
+      const table = document.getElementById('rr-table');
+      const empty = document.getElementById('rr-empty');
+      tbody.innerHTML = '';
+
+      if (!rules.length) {
+        table.style.display = 'none';
+        empty.style.display = '';
+        return;
+      }
+      table.style.display = '';
+      empty.style.display = 'none';
+
+      for (const rule of rules) {
+        const tr = document.createElement('tr');
+
+        // 状態トグルボタン
+        const active = rule.active !== false;
+        const toggleLabel = active ? '有効' : '無効';
+        const toggleCls   = active ? 'toggle-btn active' : 'toggle-btn inactive';
+
+        // 繰り返しパターン説明
+        const patternStr = describeRecurrence(rule.recurrence);
+
+        // タグバッジ
+        const tagHtml = (rule.tags || []).map(t => {
+          const def = TAG_DEFS[t] || { label: t, cls: '' };
+          return `<span class="tag-badge ${def.cls}">${def.label}</span>`;
+        }).join('');
+
+        tr.innerHTML = `
+          <td>
+            <button class="${toggleCls}" onclick="toggleRecurringRule('${rule.id}', this)">
+              ${toggleLabel}
+            </button>
+          </td>
+          <td>${esc(rule.store_name || '')}</td>
+          <td><span class="recur-badge">${esc(patternStr)}</span></td>
+          <td>${tagHtml || '<span style="color:#9ca3af;">—</span>'}</td>
+          <td style="text-align:center;">${rule.narabi_size > 0 ? `${rule.narabi_size} 台` : '—'}</td>
+          <td style="color:#6b7280;">${esc(rule.memo || '')}</td>
+          <td>
+            <button class="event-delete-btn" onclick="deleteRecurringRule('${rule.id}')">削除</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // ─── 繰り返しパターンの文字列表現 ─────────────
+    function describeRecurrence(r) {
+      if (!r) return '—';
+      const type = r.type;
+      if (type === 'monthly_day') {
+        return '毎月 ' + (r.days || []).join('・') + '日';
+      } else if (type === 'weekly_day') {
+        return `毎週 ${WEEKDAY_LABELS[r.weekday] ?? '?'}曜日`;
+      } else if (type === 'monthly_nth_weekday') {
+        return `第${r.n} ${WEEKDAY_LABELS[r.weekday] ?? '?'}曜日`;
+      } else if (type === 'yearly') {
+        return `毎年 ${r.month}月${r.day}日`;
+      }
+      return type;
+    }
+
+    // ─── トグル ────────────────────────────────────
+    async function toggleRecurringRule(id, btn) {
+      const res  = await fetch(`/api/recurring_rules/${id}/toggle`, { method: 'PATCH' });
+      const data = await res.json();
+      if (!res.ok) { alert(`切り替えに失敗しました: ${data.error}`); return; }
+      const active = data.active;
+      btn.textContent = active ? '有効' : '無効';
+      btn.className   = active ? 'toggle-btn active' : 'toggle-btn inactive';
+    }
+
+    // ─── 削除 ──────────────────────────────────────
+    async function deleteRecurringRule(id) {
+      const rule = rrRulesData.find(r => r.id === id);
+      if (!confirm(`「${rule?.store_name || id}」の繰り返しルールを削除しますか？`)) return;
+
+      const res  = await fetch(`/api/recurring_rules/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) { alert(`削除に失敗しました: ${data.error}`); return; }
+      await loadRecurringRules();
+    }
+
+    // ─── フォームリセット ─────────────────────────
+    function resetRrForm() {
+      document.getElementById('rr-store').value = '';
+      document.getElementById('rr-memo').value  = '';
+      document.getElementById('rr-narabi').value = '6';
+      document.querySelectorAll('#rr-tags-grid input[type=checkbox]').forEach(cb => {
+        cb.checked = false;
+        cb.closest('label').classList.remove('checked');
+      });
+      document.getElementById('rr-narabi-label').style.display = 'none';
+      document.getElementById('rr-narabi-input').style.display = 'none';
+      selectRecurrenceType('monthly_day');
+    }
+
+    // ─── メッセージ表示 ───────────────────────────
+    function showRrMsg(type, text) {
+      const el = document.getElementById('rr-form-msg');
+      el.className = type;
+      el.textContent = text;
+      el.style.display = 'block';
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.style.display = 'none', 8000);
+    }
   </script>
 </body>
 </html>

@@ -1,0 +1,255 @@
+[
+  {
+    "id": "3438569b",
+    "store_name": "スーパーＤ’ステーション錦糸町店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        6,
+        16,
+        26
+      ]
+    },
+    "tags": [
+      "has_narabi_koyaku"
+    ],
+    "narabi_size": 6,
+    "memo": "６のつく日",
+    "active": true
+  },
+  {
+    "id": "23d983f4",
+    "store_name": "スーパーＤ’ステーション錦糸町店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        7,
+        17,
+        27
+      ]
+    },
+    "tags": [
+      "has_narabi_koyaku"
+    ],
+    "narabi_size": 7,
+    "memo": "７のつく日",
+    "active": true
+  },
+  {
+    "id": "a2f67a05",
+    "store_name": "スーパーＤ’ステーション錦糸町店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        29
+      ]
+    },
+    "tags": [
+      "is_anniversary"
+    ],
+    "narabi_size": 6,
+    "memo": "月１周年",
+    "active": true
+  },
+  {
+    "id": "78cf7394",
+    "store_name": "スーパーＤ’ステーション錦糸町店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        10,
+        20,
+        30
+      ]
+    },
+    "tags": [
+      "has_narabi_koyaku"
+    ],
+    "narabi_size": 6,
+    "memo": "０のつく日",
+    "active": true
+  },
+  {
+    "id": "b7415e12",
+    "store_name": "エスパス日拓新宿歌舞伎町店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        7,
+        17,
+        27
+      ]
+    },
+    "tags": [
+      "is_tokuteibi"
+    ],
+    "narabi_size": 6,
+    "memo": "",
+    "active": true
+  },
+  {
+    "id": "3b91c218",
+    "store_name": "エスパス日拓新宿歌舞伎町店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        23
+      ]
+    },
+    "tags": [
+      "is_anniversary"
+    ],
+    "narabi_size": 6,
+    "memo": "",
+    "active": true
+  },
+  {
+    "id": "4065cec6",
+    "store_name": "マルハン新宿東宝ビル店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        21
+      ]
+    },
+    "tags": [
+      "is_tokuteibi"
+    ],
+    "narabi_size": 6,
+    "memo": "店長就任日",
+    "active": true
+  },
+  {
+    "id": "aa014e16",
+    "store_name": "マルハン新宿東宝ビル店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        22
+      ]
+    },
+    "tags": [
+      "is_zorome_day",
+      "has_suffix_koyaku"
+    ],
+    "narabi_size": 6,
+    "memo": "ゾロ目",
+    "active": true
+  },
+  {
+    "id": "56c4f6b7",
+    "store_name": "マルハン新宿東宝ビル店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        23
+      ]
+    },
+    "tags": [
+      "is_tokuteibi"
+    ],
+    "narabi_size": 6,
+    "memo": "やばたにえん",
+    "active": true
+  },
+  {
+    "id": "9edcfe30",
+    "store_name": "マルハン新宿東宝ビル店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        24
+      ]
+    },
+    "tags": [
+      "is_anniversary"
+    ],
+    "narabi_size": 6,
+    "memo": "",
+    "active": true
+  },
+  {
+    "id": "970dd1fa",
+    "store_name": "マルハン新宿東宝ビル店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        25
+      ]
+    },
+    "tags": [
+      "is_juggler_boost_day"
+    ],
+    "narabi_size": 6,
+    "memo": "",
+    "active": true
+  },
+  {
+    "id": "c8cd6f0d",
+    "store_name": "マルハン新宿東宝ビル店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        26
+      ]
+    },
+    "tags": [
+      "has_suffix_koyaku"
+    ],
+    "narabi_size": 6,
+    "memo": "６のつく日",
+    "active": true
+  },
+  {
+    "id": "58011bcb",
+    "store_name": "マルハン新宿東宝ビル店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        7,
+        17,
+        27
+      ]
+    },
+    "tags": [
+      "is_tokuteibi"
+    ],
+    "narabi_size": 6,
+    "memo": "",
+    "active": true
+  },
+  {
+    "id": "6cf22f44",
+    "store_name": "マルハン新宿東宝ビル店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        5,
+        15,
+        25
+      ]
+    },
+    "tags": [
+      "is_juggler_boost_day"
+    ],
+    "narabi_size": 6,
+    "memo": "",
+    "active": true
+  },
+  {
+    "id": "1171b161",
+    "store_name": "スーパーＤ’ステーション錦糸町店",
+    "recurrence": {
+      "type": "monthly_day",
+      "days": [
+        1
+      ]
+    },
+    "tags": [
+      "is_tokuteibi"
+    ],
+    "narabi_size": 6,
+    "memo": "店長就任日",
+    "active": true
+  }
+]

@@ -27,6 +27,24 @@ RULES_BACKUP_DIR = Path(BASE_DIR) / "config" / "backups"
 RULES_BACKUP_KEEP = 10  # 保持するバックアップ件数
 REJUDGE_SCRIPT = os.path.join(SCRIPTS_DIR, "rejudge_existing.py")
 
+# 公約カレンダーファイル
+EVENTS_PATH           = Path(BASE_DIR) / "config" / "events.json"
+RECURRING_RULES_PATH  = Path(BASE_DIR) / "config" / "recurring_rules.json"
+STORES_CONFIG_PATH    = Path(BASE_DIR) / "config" / "stores.json"
+
+# 公約タグ定義（tag_key → 表示名）
+EVENT_TAGS = {
+    "is_tokuteibi":        "特定日",
+    "is_old_event_day":    "旧イベント日",
+    "is_syuzai_day":       "取材日",
+    "is_raiten_day":       "来店日",
+    "is_anniversary":      "周年日",
+    "is_zorome_day":       "ゾロ目日",
+    "is_juggler_boost_day":"ジャグラー強化日",
+    "has_suffix_koyaku":   "末尾公約",
+    "has_narabi_koyaku":   "並び公約",
+}
+
 # 編集可能な数値フィールド（表示順）
 RULE_NUMERIC_FIELDS = [
     "min_games_blank", "min_games_circle", "min_games_double",
@@ -373,6 +391,251 @@ def run_rejudge():
     }
     threading.Thread(target=_run_job, args=(job_id, cmd), daemon=True).start()
     return jsonify({"job_id": job_id})
+
+
+# ---------------------------------------------------------------------------
+# 公約カレンダー API
+# ---------------------------------------------------------------------------
+
+def _load_events() -> list:
+    """events.json を読み込む。ファイルがなければ空リストを返す。"""
+    if not EVENTS_PATH.exists():
+        return []
+    with open(EVENTS_PATH, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _save_events(events: list) -> None:
+    """events.json に書き込む。"""
+    with open(EVENTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(events, f, ensure_ascii=False, indent=2)
+
+
+def _validate_event(data: dict) -> list[str]:
+    """イベントデータのバリデーション。エラーメッセージのリストを返す。"""
+    errors = []
+    store = data.get("store_name", "").strip()
+    date  = data.get("date", "").strip()
+    tags  = data.get("tags", [])
+
+    if not store:
+        errors.append("店舗名を選択してください")
+    if not date or not date.isdigit() or len(date) != 8:
+        errors.append("日付は YYYYMMDD 形式で入力してください")
+    if not isinstance(tags, list):
+        errors.append("タグの形式が不正です")
+    else:
+        for t in tags:
+            if t not in EVENT_TAGS:
+                errors.append(f"不明なタグ: {t}")
+
+    narabi = data.get("narabi_size", 0)
+    if not isinstance(narabi, int) or narabi < 0 or narabi > 100:
+        errors.append("並び台数は 0〜100 の整数で入力してください")
+
+    return errors
+
+
+@app.route("/api/events", methods=["GET"])
+def api_get_events():
+    """公約一覧を日付の昇順で返す。"""
+    events = _load_events()
+    events_sorted = sorted(events, key=lambda e: (e.get("date", ""), e.get("store_name", "")))
+    return jsonify(events_sorted)
+
+
+@app.route("/api/events", methods=["POST"])
+def api_add_event():
+    """公約を1件追加する。"""
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "リクエストボディが空です"}), 400
+
+    errors = _validate_event(data)
+    if errors:
+        return jsonify({"error": "入力エラー", "details": errors}), 422
+
+    event = {
+        "store_name":  data["store_name"].strip(),
+        "date":        data["date"].strip(),
+        "tags":        data.get("tags", []),
+        "narabi_size": int(data.get("narabi_size", 0)),
+        "memo":        data.get("memo", "").strip(),
+    }
+
+    events = _load_events()
+
+    # 同じ店舗・同じ日付の重複チェック
+    for e in events:
+        if e["store_name"] == event["store_name"] and e["date"] == event["date"]:
+            return jsonify({"error": f"{event['store_name']} の {event['date']} はすでに登録されています"}), 409
+
+    events.append(event)
+    _save_events(events)
+    return jsonify({"ok": True, "event": event})
+
+
+@app.route("/api/events/<int:index>", methods=["DELETE"])
+def api_delete_event(index):
+    """公約を1件削除する（インデックス指定）。"""
+    events = _load_events()
+    events_sorted = sorted(events, key=lambda e: (e.get("date", ""), e.get("store_name", "")))
+
+    if index < 0 or index >= len(events_sorted):
+        return jsonify({"error": "指定されたインデックスが存在しません"}), 404
+
+    removed = events_sorted.pop(index)
+    _save_events(events_sorted)
+    return jsonify({"ok": True, "removed": removed})
+
+
+@app.route("/api/stores", methods=["GET"])
+def api_get_stores():
+    """有効な店舗名一覧を返す（公約フォームのプルダウン用）。"""
+    if not STORES_CONFIG_PATH.exists():
+        return jsonify([])
+    with open(STORES_CONFIG_PATH, encoding="utf-8") as f:
+        stores = json.load(f)
+    enabled = sorted(
+        [s["store_name"] for s in stores if s.get("enabled", False)],
+        key=lambda n: next((s.get("sort_order", 999) for s in stores if s["store_name"] == n), 999)
+    )
+    return jsonify(enabled)
+
+
+@app.route("/api/event_tags", methods=["GET"])
+def api_get_event_tags():
+    """タグ定義（key → 表示名）を返す。"""
+    return jsonify(EVENT_TAGS)
+
+
+# ---------------------------------------------------------------------------
+# 繰り返しルール API
+# ---------------------------------------------------------------------------
+
+def _load_recurring_rules() -> list:
+    """recurring_rules.json を読み込む。ファイルがなければ空リストを返す。"""
+    if not RECURRING_RULES_PATH.exists():
+        return []
+    with open(RECURRING_RULES_PATH, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _save_recurring_rules(rules: list) -> None:
+    """recurring_rules.json に書き込む。"""
+    with open(RECURRING_RULES_PATH, "w", encoding="utf-8") as f:
+        json.dump(rules, f, ensure_ascii=False, indent=2)
+
+
+def _validate_recurring_rule(data: dict) -> list:
+    """繰り返しルールのバリデーション。エラーメッセージのリストを返す。"""
+    errors = []
+    store = data.get("store_name", "").strip()
+    recurrence = data.get("recurrence", {})
+    tags = data.get("tags", [])
+
+    if not store:
+        errors.append("店舗名を選択してください")
+
+    rtype = recurrence.get("type", "")
+    if rtype == "monthly_day":
+        days = recurrence.get("days", [])
+        if not days or not isinstance(days, list):
+            errors.append("繰り返し日（days）を1つ以上指定してください")
+        else:
+            for d in days:
+                if not isinstance(d, int) or d < 1 or d > 31:
+                    errors.append(f"日付 {d} は 1〜31 の整数である必要があります")
+    elif rtype == "weekly_day":
+        weekday = recurrence.get("weekday")
+        if weekday is None or not isinstance(weekday, int) or weekday < 0 or weekday > 6:
+            errors.append("weekday は 0〜6 の整数である必要があります（0=月〜6=日）")
+    elif rtype == "monthly_nth_weekday":
+        n = recurrence.get("n")
+        weekday = recurrence.get("weekday")
+        if n is None or not isinstance(n, int) or n < 1 or n > 5:
+            errors.append("n は 1〜5 の整数である必要があります")
+        if weekday is None or not isinstance(weekday, int) or weekday < 0 or weekday > 6:
+            errors.append("weekday は 0〜6 の整数である必要があります（0=月〜6=日）")
+    elif rtype == "yearly":
+        month = recurrence.get("month")
+        day = recurrence.get("day")
+        if month is None or not isinstance(month, int) or month < 1 or month > 12:
+            errors.append("month は 1〜12 の整数である必要があります")
+        if day is None or not isinstance(day, int) or day < 1 or day > 31:
+            errors.append("day は 1〜31 の整数である必要があります")
+    else:
+        errors.append(f"不明な recurrence type: '{rtype}'")
+
+    if not isinstance(tags, list):
+        errors.append("タグの形式が不正です")
+    else:
+        for t in tags:
+            if t not in EVENT_TAGS:
+                errors.append(f"不明なタグ: {t}")
+
+    narabi = data.get("narabi_size", 0)
+    if not isinstance(narabi, int) or narabi < 0 or narabi > 100:
+        errors.append("並び台数は 0〜100 の整数で入力してください")
+
+    return errors
+
+
+@app.route("/api/recurring_rules", methods=["GET"])
+def api_get_recurring_rules():
+    """繰り返しルール一覧を返す。"""
+    rules = _load_recurring_rules()
+    return jsonify(rules)
+
+
+@app.route("/api/recurring_rules", methods=["POST"])
+def api_add_recurring_rule():
+    """繰り返しルールを1件追加する。"""
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "リクエストボディが空です"}), 400
+
+    errors = _validate_recurring_rule(data)
+    if errors:
+        return jsonify({"error": "入力エラー", "details": errors}), 422
+
+    rule = {
+        "id": str(uuid.uuid4())[:8],
+        "store_name":  data["store_name"].strip(),
+        "recurrence":  data["recurrence"],
+        "tags":        data.get("tags", []),
+        "narabi_size": int(data.get("narabi_size", 0)),
+        "memo":        data.get("memo", "").strip(),
+        "active":      True,
+    }
+
+    rules = _load_recurring_rules()
+    rules.append(rule)
+    _save_recurring_rules(rules)
+    return jsonify({"ok": True, "rule": rule})
+
+
+@app.route("/api/recurring_rules/<rule_id>", methods=["DELETE"])
+def api_delete_recurring_rule(rule_id):
+    """繰り返しルールを1件削除する（ID指定）。"""
+    rules = _load_recurring_rules()
+    new_rules = [r for r in rules if r.get("id") != rule_id]
+    if len(new_rules) == len(rules):
+        return jsonify({"error": "指定されたIDのルールが存在しません"}), 404
+    _save_recurring_rules(new_rules)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/recurring_rules/<rule_id>/toggle", methods=["PATCH"])
+def api_toggle_recurring_rule(rule_id):
+    """繰り返しルールの有効/無効を切り替える。"""
+    rules = _load_recurring_rules()
+    for rule in rules:
+        if rule.get("id") == rule_id:
+            rule["active"] = not rule.get("active", True)
+            _save_recurring_rules(rules)
+            return jsonify({"ok": True, "active": rule["active"]})
+    return jsonify({"error": "指定されたIDのルールが存在しません"}), 404
 
 
 if __name__ == "__main__":
