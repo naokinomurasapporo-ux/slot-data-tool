@@ -638,6 +638,133 @@ def api_toggle_recurring_rule(rule_id):
     return jsonify({"error": "指定されたIDのルールが存在しません"}), 404
 
 
+# ---------------------------------------------------------------------------
+# 台番号別強さ分析 API
+# ---------------------------------------------------------------------------
+
+PROCESSED_DIR = Path(BASE_DIR) / "data" / "processed"
+
+_JUDGE_SCORE = {"◎": 3, "○": 2, "△": 1, "×": 0}
+_HIGH_JUDGES = {"◎", "○"}
+
+
+def _aggregate_units(store_json: dict) -> list:
+    from collections import defaultdict
+    unit_stats: dict = defaultdict(lambda: {
+        "score": 0, "double": 0, "circle": 0, "triangle": 0, "cross": 0,
+        "judged_days": 0, "machines": set(),
+    })
+    for machine in store_json.get("machines", []):
+        mname = machine["name"]
+        for unit in machine.get("units", []):
+            uid = unit["unit"]
+            s = unit_stats[uid]
+            s["machines"].add(mname)
+            for day_data in unit.get("days", {}).values():
+                judge = day_data.get("judge", "blank")
+                if judge not in _JUDGE_SCORE:
+                    continue
+                s["judged_days"] += 1
+                s["score"] += _JUDGE_SCORE[judge]
+                if judge == "◎":   s["double"]   += 1
+                elif judge == "○": s["circle"]   += 1
+                elif judge == "△": s["triangle"] += 1
+                elif judge == "×": s["cross"]    += 1
+
+    results = []
+    for uid, s in unit_stats.items():
+        judged = s["judged_days"]
+        high = s["double"] + s["circle"]
+        results.append({
+            "unit": uid,
+            "judged_days": judged,
+            "score": s["score"],
+            "avg_score": round(s["score"] / judged, 3) if judged > 0 else 0.0,
+            "double": s["double"],
+            "circle": s["circle"],
+            "triangle": s["triangle"],
+            "cross": s["cross"],
+            "high_rate": round(high / judged, 4) if judged > 0 else 0.0,
+            "machines": sorted(s["machines"]),
+        })
+    return results
+
+
+def _aggregate_suffix(unit_rows: list, suffix_len: int) -> list:
+    from collections import defaultdict
+    suffix_stats: dict = defaultdict(lambda: {
+        "score": 0, "judged_days": 0, "high_days": 0, "unit_count": 0,
+    })
+    for row in unit_rows:
+        uid = row["unit"]
+        suffix = uid[-suffix_len:].zfill(suffix_len) if uid.isdigit() else uid[-suffix_len:]
+        s = suffix_stats[suffix]
+        s["judged_days"] += row["judged_days"]
+        s["score"] += row["score"]
+        s["high_days"] += row["double"] + row["circle"]
+        s["unit_count"] += 1
+
+    results = []
+    for suffix, s in suffix_stats.items():
+        judged = s["judged_days"]
+        results.append({
+            "suffix": suffix,
+            "unit_count": s["unit_count"],
+            "judged_days": judged,
+            "score": s["score"],
+            "avg_score": round(s["score"] / judged, 3) if judged > 0 else 0.0,
+            "high_days": s["high_days"],
+            "high_rate": round(s["high_days"] / judged, 4) if judged > 0 else 0.0,
+        })
+    return results
+
+
+@app.route("/api/analysis/unit_strength", methods=["GET"])
+def api_unit_strength():
+    """台番号別強さ分析を実行してJSONで返す。"""
+    store_name = request.args.get("store", "").strip()
+    try:
+        top       = int(request.args.get("top", 15))
+        min_days  = int(request.args.get("min_days", 3))
+        suffix_len = int(request.args.get("suffix_len", 1))
+    except ValueError:
+        return jsonify({"error": "パラメータが不正です"}), 400
+
+    if not store_name:
+        return jsonify({"error": "店舗名を指定してください"}), 400
+
+    # 30d JSON を探す
+    safe_name = store_name.replace("/", "_").replace(" ", "_").replace("　", "_")
+    path = PROCESSED_DIR / f"30d_{safe_name}.json"
+    if not path.exists():
+        return jsonify({"error": f"30日データが見つかりません: 30d_{safe_name}.json"}), 404
+
+    with open(path, encoding="utf-8") as f:
+        store_json = json.load(f)
+
+    unit_rows = _aggregate_units(store_json)
+    if not unit_rows:
+        return jsonify({"error": "データがありません"}), 404
+
+    # フィルタ・ランキング
+    filtered = [r for r in unit_rows if r["judged_days"] >= min_days]
+    score_ranking  = sorted(filtered, key=lambda r: (-r["avg_score"], -r["score"], r["unit"]))[:top]
+    high_ranking   = sorted(filtered, key=lambda r: (-r["high_rate"], -(r["double"] + r["circle"]), r["unit"]))[:top]
+    suffix_rows    = _aggregate_suffix(unit_rows, suffix_len)
+    suffix_ranking = sorted(suffix_rows, key=lambda r: (-r["high_rate"], -r["avg_score"]))
+
+    return jsonify({
+        "store_name":     store_name,
+        "total_units":    len(unit_rows),
+        "filtered_units": len(filtered),
+        "min_days":       min_days,
+        "score_ranking":  score_ranking,
+        "high_ranking":   high_ranking,
+        "suffix_ranking": suffix_ranking,
+        "suffix_len":     suffix_len,
+    })
+
+
 if __name__ == "__main__":
     print("=" * 50)
     print("slot-data-tool 管理画面を起動します")

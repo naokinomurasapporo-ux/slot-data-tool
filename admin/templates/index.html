@@ -432,6 +432,116 @@
     .publish-badge.unknown     { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
     #last-action-info          { color: #9ca3af; }
 
+    /* ── 台番号分析タブ ── */
+    .analysis-controls {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 16px 18px;
+      margin-bottom: 20px;
+    }
+    .analysis-ctrl-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .analysis-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #374151;
+      white-space: nowrap;
+    }
+    .analysis-select {
+      padding: 6px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      background: #fff;
+      color: #1e293b;
+      max-width: 280px;
+    }
+    .analysis-select-sm { max-width: 110px; }
+    .analysis-run-btn {
+      padding: 8px 22px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      margin-left: 4px;
+    }
+    .analysis-run-btn:hover:not(:disabled) { opacity: 0.85; }
+    .analysis-run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .analysis-meta {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+    .analysis-section {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 16px 18px;
+      margin-bottom: 20px;
+    }
+    .analysis-section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 12px;
+    }
+    .analysis-section-note {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: #6b7280;
+      margin-left: 8px;
+    }
+    .analysis-table-wrap { overflow-x: auto; }
+    .analysis-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.83rem;
+    }
+    .analysis-table th {
+      background: #1e293b;
+      color: #cbd5e1;
+      font-weight: 600;
+      padding: 8px 10px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .analysis-table th.sep { border-left: 2px solid #374151; }
+    .analysis-table td {
+      padding: 5px 10px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .analysis-table td.sep { border-left: 2px solid #e2e8f0; }
+    .analysis-table td.td-machine { text-align: left; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+    .analysis-table tr:last-child td { border-bottom: none; }
+    .analysis-table tr:hover td { background: #f8fafc; }
+    .analysis-table td.rank { font-weight: 700; color: #6b7280; }
+    .analysis-table td.unit-id { font-weight: 700; font-family: "SF Mono","Menlo",monospace; color: #1e293b; }
+    .judge-double { color: #dc2626; font-weight: 700; }
+    .judge-circle { color: #2563eb; font-weight: 700; }
+    .bar-cell { text-align: left; font-family: "SF Mono","Menlo",monospace; font-size: 0.75rem; color: #374151; min-width: 120px; }
+    .high-rate-good   { color: #166534; font-weight: 700; }
+    .high-rate-medium { color: #92400e; font-weight: 600; }
+    .analysis-empty, .analysis-error {
+      text-align: center;
+      padding: 40px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+    .analysis-empty { background: #fff; color: #6b7280; }
+    .analysis-error { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+
     /* ── 公約カレンダータブ ── */
     .events-guide {
       background: #eff6ff;
@@ -786,6 +896,7 @@
     <button class="tab-btn active" onclick="switchTab('ops')">⚙ 操作</button>
     <button class="tab-btn" onclick="switchTab('rules')">📋 判定基準</button>
     <button class="tab-btn" onclick="switchTab('events')">📅 公約カレンダー</button>
+    <button class="tab-btn" onclick="switchTab('analysis')">📊 台番号分析</button>
   </div>
 
   <!-- ══════════════════════════════
@@ -1065,12 +1176,117 @@
   </div><!-- /tab-events -->
 
 
+  <!-- ══════════════════════════════
+       台番号分析タブ
+  ══════════════════════════════ -->
+  <div id="tab-analysis" class="tab-panel">
+
+    <!-- コントロールバー -->
+    <div class="analysis-controls">
+      <div class="analysis-ctrl-row">
+        <label class="analysis-label">店舗</label>
+        <select id="an-store" class="analysis-select">
+          <option value="">読み込み中...</option>
+        </select>
+
+        <label class="analysis-label">上位台数</label>
+        <select id="an-top" class="analysis-select analysis-select-sm">
+          <option value="10">10台</option>
+          <option value="15" selected>15台</option>
+          <option value="20">20台</option>
+          <option value="30">30台</option>
+        </select>
+
+        <label class="analysis-label">最小判定日数</label>
+        <select id="an-min-days" class="analysis-select analysis-select-sm">
+          <option value="1">1日以上</option>
+          <option value="3" selected>3日以上</option>
+          <option value="5">5日以上</option>
+          <option value="10">10日以上</option>
+        </select>
+
+        <label class="analysis-label">末尾桁数</label>
+        <select id="an-suffix-len" class="analysis-select analysis-select-sm">
+          <option value="1" selected>1桁</option>
+          <option value="2">2桁</option>
+        </select>
+
+        <button id="an-run-btn" class="analysis-run-btn" onclick="runAnalysis()">分析実行</button>
+      </div>
+      <div id="an-meta" class="analysis-meta"></div>
+    </div>
+
+    <!-- 結果エリア -->
+    <div id="an-result" style="display:none;">
+
+      <!-- 案1: スコアランキング -->
+      <div class="analysis-section">
+        <h3 class="analysis-section-title">案1　スコアランキング
+          <span class="analysis-section-note">◎=3点 ○=2点 △=1点 ×=0点 ／ 判定あり日の平均</span>
+        </h3>
+        <div class="analysis-table-wrap">
+          <table class="analysis-table" id="an-score-table">
+            <thead>
+              <tr>
+                <th>順位</th><th>台番号</th><th>判定日</th><th>合計pt</th><th>平均pt</th>
+                <th class="sep">◎</th><th>○</th><th>△</th><th>×</th>
+                <th class="sep">機種</th>
+              </tr>
+            </thead>
+            <tbody id="an-score-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 案2: 高設定出現率 -->
+      <div class="analysis-section">
+        <h3 class="analysis-section-title">案2　高設定出現率ランキング
+          <span class="analysis-section-note">（◎+○）÷ 判定日数</span>
+        </h3>
+        <div class="analysis-table-wrap">
+          <table class="analysis-table" id="an-high-table">
+            <thead>
+              <tr>
+                <th>順位</th><th>台番号</th><th>判定日</th><th>高設定日</th><th>出現率</th>
+                <th class="sep">◎</th><th>○</th>
+                <th class="sep">機種</th>
+              </tr>
+            </thead>
+            <tbody id="an-high-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 案3: 末尾傾向 -->
+      <div class="analysis-section">
+        <h3 class="analysis-section-title" id="an-suffix-title">案3　末尾傾向分析</h3>
+        <div class="analysis-table-wrap">
+          <table class="analysis-table" id="an-suffix-table">
+            <thead>
+              <tr>
+                <th>末尾</th><th>台数</th><th>判定日</th><th>高設定日</th><th>高設定率</th><th>平均pt</th>
+                <th class="sep">グラフ</th>
+              </tr>
+            </thead>
+            <tbody id="an-suffix-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /an-result -->
+
+    <div id="an-empty" class="analysis-empty" style="display:none;">データがありません</div>
+    <div id="an-error" class="analysis-error" style="display:none;"></div>
+
+  </div><!-- /tab-analysis -->
+
+
   <script>
     // ════════════════════════════════════════════
     // タブ切り替え
     // ════════════════════════════════════════════
     function switchTab(name) {
-      const ids = ['ops', 'rules', 'events'];
+      const ids = ['ops', 'rules', 'events', 'analysis'];
       document.querySelectorAll('.tab-btn').forEach((b, i) => {
         b.classList.toggle('active', ids[i] === name);
       });
@@ -1084,6 +1300,9 @@
       }
       if (name === 'events') {
         initEventsTab();
+      }
+      if (name === 'analysis') {
+        initAnalysisTab();
       }
     }
 
@@ -2220,6 +2439,146 @@
       el.style.display = 'block';
       clearTimeout(el._timer);
       el._timer = setTimeout(() => el.style.display = 'none', 8000);
+    }
+
+    // ════════════════════════════════════════════
+    // 台番号分析タブ
+    // ════════════════════════════════════════════
+
+    let anStoresLoaded = false;
+
+    async function initAnalysisTab() {
+      if (anStoresLoaded) return;
+      const res    = await fetch('/api/stores');
+      const stores = await res.json();
+      const sel    = document.getElementById('an-store');
+      sel.innerHTML = '<option value="">店舗を選択してください</option>';
+      for (const s of stores) {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        sel.appendChild(opt);
+      }
+      anStoresLoaded = true;
+    }
+
+    async function runAnalysis() {
+      const store     = document.getElementById('an-store').value;
+      const top       = document.getElementById('an-top').value;
+      const minDays   = document.getElementById('an-min-days').value;
+      const suffixLen = document.getElementById('an-suffix-len').value;
+
+      if (!store) { alert('店舗を選択してください'); return; }
+
+      const btn = document.getElementById('an-run-btn');
+      btn.disabled = true;
+      btn.textContent = '分析中...';
+      document.getElementById('an-result').style.display = 'none';
+      document.getElementById('an-empty').style.display  = 'none';
+      document.getElementById('an-error').style.display  = 'none';
+      document.getElementById('an-meta').textContent     = '';
+
+      const params = new URLSearchParams({ store, top, min_days: minDays, suffix_len: suffixLen });
+      let data;
+      try {
+        const res = await fetch(`/api/analysis/unit_strength?${params}`);
+        data = await res.json();
+        if (!res.ok) {
+          document.getElementById('an-error').textContent = data.error || 'エラーが発生しました';
+          document.getElementById('an-error').style.display = 'block';
+          return;
+        }
+      } catch (e) {
+        document.getElementById('an-error').textContent = 'サーバーに接続できません: ' + e;
+        document.getElementById('an-error').style.display = 'block';
+        return;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '分析実行';
+      }
+
+      if (!data.score_ranking.length && !data.high_ranking.length) {
+        document.getElementById('an-empty').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('an-meta').textContent =
+        `集計台数: ${data.total_units} 台 ／ ${data.min_days}日以上フィルタ後: ${data.filtered_units} 台`;
+
+      renderScoreTable(data.score_ranking);
+      renderHighTable(data.high_ranking);
+      renderSuffixTable(data.suffix_ranking, data.suffix_len);
+
+      document.getElementById('an-result').style.display = 'block';
+    }
+
+    function renderScoreTable(rows) {
+      const tbody = document.getElementById('an-score-tbody');
+      tbody.innerHTML = '';
+      rows.forEach((r, i) => {
+        const tr = document.createElement('tr');
+        const machines = r.machines.join(', ').substring(0, 40) + (r.machines.join(', ').length > 40 ? '…' : '');
+        tr.innerHTML = `
+          <td class="rank">${i + 1}</td>
+          <td class="unit-id">${esc(r.unit)}</td>
+          <td>${r.judged_days}日</td>
+          <td>${r.score}pt</td>
+          <td>${r.avg_score.toFixed(2)}</td>
+          <td class="sep judge-double">${r.double}</td>
+          <td class="judge-circle">${r.circle}</td>
+          <td>${r.triangle}</td>
+          <td>${r.cross}</td>
+          <td class="sep td-machine">${esc(machines)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderHighTable(rows) {
+      const tbody = document.getElementById('an-high-tbody');
+      tbody.innerHTML = '';
+      rows.forEach((r, i) => {
+        const high = r.double + r.circle;
+        const ratePct = (r.high_rate * 100).toFixed(1) + '%';
+        const rateCls = r.high_rate >= 0.3 ? 'high-rate-good' : r.high_rate >= 0.15 ? 'high-rate-medium' : '';
+        const machines = r.machines.join(', ').substring(0, 40) + (r.machines.join(', ').length > 40 ? '…' : '');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="rank">${i + 1}</td>
+          <td class="unit-id">${esc(r.unit)}</td>
+          <td>${r.judged_days}日</td>
+          <td>${high}日</td>
+          <td class="${rateCls}">${ratePct}</td>
+          <td class="sep judge-double">${r.double}</td>
+          <td class="judge-circle">${r.circle}</td>
+          <td class="sep td-machine">${esc(machines)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderSuffixTable(rows, suffixLen) {
+      document.getElementById('an-suffix-title').textContent =
+        `案3　末尾${suffixLen}桁グループ別傾向分析`;
+      const tbody = document.getElementById('an-suffix-tbody');
+      tbody.innerHTML = '';
+      const maxRate = Math.max(...rows.map(r => r.high_rate), 0.001);
+      rows.forEach(r => {
+        const ratePct = (r.high_rate * 100).toFixed(1) + '%';
+        const rateCls = r.high_rate >= 0.15 ? 'high-rate-good' : r.high_rate >= 0.08 ? 'high-rate-medium' : '';
+        const barLen  = Math.round((r.high_rate / maxRate) * 20);
+        const bar     = '█'.repeat(barLen) + '░'.repeat(20 - barLen);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="unit-id">末尾 ${esc(r.suffix)}</td>
+          <td>${r.unit_count}台</td>
+          <td>${r.judged_days}日</td>
+          <td>${r.high_days}日</td>
+          <td class="${rateCls}">${ratePct}</td>
+          <td>${r.avg_score.toFixed(2)}</td>
+          <td class="sep bar-cell">${bar}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
   </script>
 </body>
