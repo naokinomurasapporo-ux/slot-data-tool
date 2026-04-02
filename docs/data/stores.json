@@ -1,41 +1,41 @@
 {
-  "generated_at": "20260401",
+  "generated_at": "20260402",
   "stores": [
     {
       "store_name": "本八幡ＵＮＯ",
       "file": "30d_本八幡ＵＮＯ.json",
-      "date_count": 19,
-      "latest_date": "20260401"
+      "date_count": 20,
+      "latest_date": "20260402"
     },
     {
       "store_name": "スーパーＤ’ステーション錦糸町店",
       "file": "30d_スーパーＤ’ステーション錦糸町店.json",
-      "date_count": 19,
-      "latest_date": "20260401"
+      "date_count": 20,
+      "latest_date": "20260402"
     },
     {
       "store_name": "エスパス日拓新宿歌舞伎町店",
       "file": "30d_エスパス日拓新宿歌舞伎町店.json",
-      "date_count": 19,
-      "latest_date": "20260401"
+      "date_count": 20,
+      "latest_date": "20260402"
     },
     {
       "store_name": "パラッツォ船橋店パートII",
       "file": "30d_パラッツォ船橋店パートII.json",
-      "date_count": 19,
-      "latest_date": "20260401"
+      "date_count": 20,
+      "latest_date": "20260402"
     },
     {
       "store_name": "エスパス１３００新小岩北口駅前店",
       "file": "30d_エスパス１３００新小岩北口駅前店.json",
-      "date_count": 19,
-      "latest_date": "20260401"
+      "date_count": 20,
+      "latest_date": "20260402"
     },
     {
       "store_name": "マルハン新宿東宝ビル店",
       "file": "30d_マルハン新宿東宝ビル店.json",
-      "date_count": 19,
-      "latest_date": "20260401"
+      "date_count": 20,
+      "latest_date": "20260402"
     }
   ]
 }
