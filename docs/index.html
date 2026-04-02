@@ -307,6 +307,31 @@
     .s-ap   { color: #d97706; }
     .s-none { color: #ccc; font-size: 10px; }
 
+    /* ===== 全台系バッジ（機種サマリー用）===== */
+    .zen-badge {
+      display: block;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 3px;
+      border-radius: 2px;
+      margin-top: 2px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .zen-roku { background: #ef4444; color: white; }
+    .zen-zen  { background: #f59e0b; color: white; }
+
+    /* ===== 全台系サマリー行（台別テーブル用）===== */
+    .zen-row-cell {
+      text-align: center;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 3px;
+    }
+    .zen-row-roku { background: #fecaca; color: #b91c1c; }
+    .zen-row-zen  { background: #fef3c7; color: #b45309; }
+    .zen-row-none { background: #f8f9fb; }
+
     /* ===== 末尾列（固定・末尾サマリー用）===== */
     .col-tail {
       position: sticky;
@@ -412,6 +437,10 @@
     <span class="legend-sum-item"><span class="legend-sum-swatch" style="background:#dcfce7"></span>○以上 15%+</span>
     <span class="legend-sum-item"><span class="legend-sum-swatch" style="background:white"></span>○以上 1%+</span>
     <span class="legend-sum-item"><span class="legend-sum-swatch" style="background:#f8f9fb"></span>データなし</span>
+    <span style="color:#aaa">　</span>
+    <span class="legend-label">全台系：</span>
+    <span class="legend-sum-item"><span class="zen-badge zen-roku" style="display:inline-block">6あり全台系</span>○+≥70% かつ ◎≥35%</span>
+    <span class="legend-sum-item"><span class="zen-badge zen-zen" style="display:inline-block">全台系</span>○+≥70%</span>
   </div>
 </div>
 
@@ -688,6 +717,17 @@ function calcDaySummary(machine, dateStr) {
   };
 }
 
+/**
+ * 全台系ステータスを返す（サマリー結果から計算）。
+ * @returns 'roku_ari' | 'zenudai' | 'none' | 'skip'
+ */
+function zenStatus(sm, minUnits = 3) {
+  if (!sm || sm.total < minUnits) return 'skip';
+  if (sm.sPlusPct >= 70 && sm.ss / sm.total >= 0.35) return 'roku_ari';
+  if (sm.sPlusPct >= 70) return 'zenudai';
+  return 'none';
+}
+
 // ===== 末尾ごとの1日サマリーを計算 =====
 
 /**
@@ -826,6 +866,9 @@ function renderSummary(data) {
       html += `<span class="s-line s-ss">◎ ${pct(sm.ss,    sm.total)}</span>`;
       html += `<span class="s-line s-sp">○+ ${pct(sm.sPlus, sm.total)}</span>`;
       html += `<span class="s-line s-ap">△+ ${pct(sm.aPlus, sm.total)}</span>`;
+      const zen = zenStatus(sm);
+      if (zen === 'roku_ari') html += `<span class="zen-badge zen-roku">6あり全台系</span>`;
+      else if (zen === 'zenudai') html += `<span class="zen-badge zen-zen">全台系</span>`;
       html += `</td>`;
     }
 
@@ -900,6 +943,24 @@ function renderTable(data) {
     html += `<table style="table-layout:fixed;width:max-content;border-collapse:collapse">`;
     html += makeColgroup(W_UNIT_LEFT, dates.length);
     html += `<tbody>`;
+
+    // 全台系サマリー行
+    html += `<tr>`;
+    html += `<td class="col-unit" style="font-size:9px;color:#aaa;text-align:center;vertical-align:middle">全台系</td>`;
+    for (const d of dates) {
+      const isLatest = d === latestDate;
+      const sm = calcDaySummary(machine, d);
+      const zen = zenStatus(sm);
+      const extra = isLatest ? ' latest-date' : '';
+      if (zen === 'roku_ari') {
+        html += `<td class="date-cell zen-row-cell zen-row-roku${extra}">6あり<br>全台系</td>`;
+      } else if (zen === 'zenudai') {
+        html += `<td class="date-cell zen-row-cell zen-row-zen${extra}">全台系</td>`;
+      } else {
+        html += `<td class="date-cell zen-row-cell zen-row-none${extra}"></td>`;
+      }
+    }
+    html += `</tr>`;
 
     for (const unit of machine.units) {
       html += `<tr><td class="col-unit">${esc(unit.unit)}</td>`;
