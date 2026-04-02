@@ -203,6 +203,24 @@ def judge_unit_with_debug(
             upper_comb = rule[upper_comb_key]
 
             if base_judge == "×":
+                # × → △ 昇格: 合算が設定4基準（comb_good）を超えている場合は昇格不可
+                if target_judge == "△" and combined_period > rule["comb_good"]:
+                    reason = (
+                        f"昇格NG: ×→△ 合算超過({combined_period}>{rule['comb_good']})"
+                    )
+                    promotion = False
+                    final_judge = base_judge
+                    debug = {
+                        "base_judge":   base_judge,
+                        "rb_period":    round(rb_period, 1) if rb_count > 0 else None,
+                        "target_judge": target_judge,
+                        "reg_score":    None,
+                        "comb_score":   None,
+                        "promotion":    False,
+                        "final_judge":  final_judge,
+                        "reason":       reason,
+                    }
+                    return final_judge, debug
                 # × には明示的な下限がないため、仮想lower = upper * 倍率 を使用
                 lower_reg  = upper_reg  * _X_LOWER_MULTIPLIER
                 lower_comb = upper_comb * _X_LOWER_MULTIPLIER
